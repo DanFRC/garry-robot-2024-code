@@ -155,6 +155,14 @@ public class Robot extends TimedRobot {
         // Except using getLeftX & getLeftY from the Joysticks
         double xAxisScaled;
         double yAxisScaled;
+        // getLeftX referring to the left joysticks left-right motion, from 1 to -1
+        // This if statement checks if the joystick is left (negative) or right (positive)
+        // If the joystick is left (negative) (or less than zero same thing) it squares the xbox contollers value (for smooth motion)
+        // But if the joystick is right (positive) it not only squares the value, but it multiplies it by negative one
+        // This is because when you square it, the value from 1 to -1 (left-right), will always be positive, so it
+        // doesn't matter if you move the joystick left or right, you will always go one direction.
+        // So if the joystick is right, it will multiply the value by -1 to make the robot move the other direction.
+        // This is the same for driver.getLeftY, but except on the up-down axis.
         if (driver.getLeftX() < 0) {
             xAxisScaled = (driver.getLeftX()*driver.getLeftX());
         }
