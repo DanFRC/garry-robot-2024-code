@@ -26,6 +26,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.CAN;
 
+//Network tables for limelight 3
+//import edu.wpi.first.networktables.NetworkTable;
+//import edu.wpi.first.networktables.NetworkTableEntry;
+//import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class Robot extends TimedRobot {
     private static final String kDefaultAuto = "Default";
@@ -84,6 +88,7 @@ public class Robot extends TimedRobot {
     }
 
 
+    //Initial startup for autonomous
     @Override
     public void autonomousInit() {
         m_autoSelected = m_chooser.getSelected();
