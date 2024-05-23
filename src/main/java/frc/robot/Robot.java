@@ -207,7 +207,7 @@ public class Robot extends TimedRobot {
 
         //Set ben to 1 to see if the code works
         int ben=0;
-        SmartDashboard.putNumber("AButtonPressed?", ben)
+        SmartDashboard.putNumber("AButtonPressed?", ben);
         //When you press A the arm will lift until the "limitSwitchUpper" is triggered
         if(driver.getAButtonPressed() && (limitSwitchUpper.get())) {
             ben = 1;
