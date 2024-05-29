@@ -12,7 +12,7 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 //import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 //import com.ctr.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
-//import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cameraserver.CameraServer;
 //import edu.wpi.first.wpilibj.interfaces.Gyro;
 //import edu.wpi.first.wpilibj.DigitalInput;
 
@@ -80,7 +80,8 @@ public class Robot extends TimedRobot {
         m_chooser.addOption("Go Right", goRightAuto);
 
         SmartDashboard.putData("Auto choices", m_chooser);
-       // CameraServer.startAutomaticCapture("cam1",0);  
+       
+        CameraServer.startAutomaticCapture("cam1",0);  
     }
 
     @Override
@@ -136,6 +137,7 @@ public class Robot extends TimedRobot {
     // bentroll is used for inverting controls (Dan)
     int bentroll=-1;
     double drive_speed=1;
+    int car=0;
     @Override
     public void teleopPeriodic() {
         
@@ -153,7 +155,8 @@ public class Robot extends TimedRobot {
             drive_speed=.5;
         }
 
-        SmartDashboard.putNumber("b", bentroll);
+        SmartDashboard.putNumber("car", car);
+        SmartDashboard.putNumber("inverted?", bentroll);
         SmartDashboard.putNumber("drive_speed", drive_speed);
 
         // New driving method is being used, same concept but
@@ -211,12 +214,11 @@ public class Robot extends TimedRobot {
         //the arm control,
 
         //Set ben to 1 to see if the code works
-        int ben=0;
-        SmartDashboard.putNumber("AButtonPressed?", ben);
         //When you press A the arm will lift until the "limitSwitchUpper" is triggered (This is temporary, for firing presets)
-        if(driver.getAButtonPressed() && (limitSwitchUpper.get())) {
-            ben = 1;
+        if(driver.getAButtonPressed()) {
+            car = 1;
             leftArmMotor.set(ControlMode.PercentOutput,1);
+            rightArmMotor.set(ControlMode.PercentOutput,1);
         }
 
         if((driver.getRawAxis(5) < -0.1) && (limitSwitchUpper.get())) {
