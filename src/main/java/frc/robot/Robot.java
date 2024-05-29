@@ -138,6 +138,7 @@ public class Robot extends TimedRobot {
     int bentroll=-1;
     double drive_speed=1;
     int car=0;
+    int pov = -1;
     @Override
     public void teleopPeriodic() {
         
@@ -149,7 +150,7 @@ public class Robot extends TimedRobot {
         if(driver.getBButtonPressed()) {
             drive_speed=1;
         }
-
+        
         //Set Drive Speed to 50%
         if(driver.getYButtonPressed()) {
             drive_speed=.5;
