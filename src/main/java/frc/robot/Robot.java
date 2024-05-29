@@ -215,10 +215,10 @@ public class Robot extends TimedRobot {
 
         //Set ben to 1 to see if the code works
         //When you press A the arm will lift until the "limitSwitchUpper" is triggered (This is temporary, for firing presets)
-        if(driver.getAButtonPressed()) {
+        if((driver.getAButtonPressed()) && (limitSwitchUpper.get())) {
             car = 1;
-            leftArmMotor.set(ControlMode.PercentOutput,1);
-            rightArmMotor.set(ControlMode.PercentOutput,1);
+            leftArmMotor.set(ControlMode.PercentOutput,1.0);
+            rightArmMotor.set(ControlMode.PercentOutput,1.0);
         }
 
         if((driver.getRawAxis(5) < -0.1) && (limitSwitchUpper.get())) {
