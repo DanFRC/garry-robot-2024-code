@@ -81,7 +81,7 @@ public class Robot extends TimedRobot {
 
         SmartDashboard.putData("Auto choices", m_chooser);
        
-        CameraServer.startAutomaticCapture("cam1",0);  
+        CameraServer.startAutomaticCapture("cam1",0);
     }
 
     @Override

@@ -5,6 +5,16 @@
       "/SmartDashboard/Auto choices": "String Chooser"
     }
   },
+  "NetworkTables": {
+    "transitory": {
+      "CameraPublisher": {
+        "cam1": {
+          "open": true
+        },
+        "open": true
+      }
+    }
+  },
   "NetworkTables Info": {
     "Connections": {
       "open": true
