@@ -134,9 +134,6 @@ public class Robot extends TimedRobot {
 
 
     private static void vribrate() {
-        for (var i = 0;) {
-
-        }
     }
 
     /* (non-Javadoc)
