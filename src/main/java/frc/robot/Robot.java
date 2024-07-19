@@ -1,7 +1,7 @@
 package frc.robot;
 
 import java.nio.channels.Channel;
-
+//test
 import com.ctre.phoenix.motorcontrol.ControlMode;
 //import com.ctre.phoenix.motorcontrol.ControlMode;
 //import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
@@ -134,6 +134,7 @@ public class Robot extends TimedRobot {
 
 
     private static void vribrate() {
+        //hello
     }
 
     /* (non-Javadoc)
