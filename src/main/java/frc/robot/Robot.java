@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -156,9 +157,12 @@ public class Robot extends TimedRobot {
             drive_speed=.5;
         }
 
+
+
         SmartDashboard.putNumber("car", car);
         SmartDashboard.putNumber("inverted?", bentroll);
         SmartDashboard.putNumber("drive_speed", drive_speed);
+
 
         // New driving method is being used, same concept but
         // Except using getLeftX & getLeftY from the Joysticks
@@ -186,6 +190,12 @@ public class Robot extends TimedRobot {
             yAxisScaled = drive_speed*bentroll*(driver.getLeftY()*driver.getLeftY());
         }    
         m_robotDrive.arcadeDrive(yAxisScaled, xAxisScaled);
+
+        if (xAxisScaled > 0) {
+            driver.setRumble(RumbleType.kLeftRumble, xAxisScaled);
+        }
+        SmartDashboard.putNumber("xAxisDriver", xAxisScaled);
+
      // try this instead, squared inputs may smooth the controls somewhat
      //   m_robotDrive.arcadeDrive(driver.getRawAxis(0)*driver.getRawAxis(0),driver.getRawAxis(1)*driver.getRawAxis(1));
       //now for the flapper (wrong '20s')
@@ -216,12 +226,6 @@ public class Robot extends TimedRobot {
 
         //Set ben to 1 to see if the code works
         //When you press A the arm will lift until the "limitSwitchUpper" is triggered (This is temporary, for firing presets)
-        if((driver.getAButtonPressed()) && (limitSwitchUpper.get())) {
-            car = 1;
-            leftArmMotor.set(ControlMode.PercentOutput,1.0);
-            rightArmMotor.set(ControlMode.PercentOutput,1.0);
-        }
-
         if((driver.getRawAxis(5) < -0.1) && (limitSwitchUpper.get())) {
             leftArmMotor.set(ControlMode.PercentOutput,(armSpeed*driver.getRawAxis(5)));
             rightArmMotor.set(ControlMode.PercentOutput,(armSpeed*driver.getRawAxis(5)));
