@@ -147,28 +147,33 @@ public class Robot extends TimedRobot {
     double drive_speed=1;
     int car=0;
     int pov = -1;
+    int rumbling = 0;
+    int intakeOn = 0;
     @Override
     public void teleopPeriodic() {
         
         // Invert Controls when a button is pressed
         if(driver.getXButtonPressed()) {
+            rumbleController(0.1, 0.4);
             bentroll*=-1;
         }
         //Set Drive Speed to 100%
         if(driver.getBButtonPressed()) {
+            rumbleController(0.4, 0.2);
             drive_speed=1;
         }
         
         //Set Drive Speed to 50%
         if(driver.getYButtonPressed()) {
+            rumbleController(0.2, 0.2);
             drive_speed=.5;
         }
-
 
 
         SmartDashboard.putNumber("car", car);
         SmartDashboard.putNumber("inverted?", bentroll);
         SmartDashboard.putNumber("drive_speed", drive_speed);
+        SmartDashboard.putNumber("rumbling?", rumbling);
 
 
         // New driving method is being used, same concept but
@@ -198,19 +203,6 @@ public class Robot extends TimedRobot {
         }    
         m_robotDrive.arcadeDrive(yAxisScaled, xAxisScaled);
 
-        if (driver.getRightTriggerAxis() > 0) {
-            driver.setRumble(RumbleType.kLeftRumble, driver.getRightTriggerAxis()*driver.getRightTriggerAxis());
-        }
-        else {
-            driver.setRumble(RumbleType.kLeftRumble, 0.0);
-        }
-
-        if (driver.getRightTriggerAxis() == 1) {
-            driver.setRumble(RumbleType.kBothRumble, 1.0);
-        }
-        else {
-            driver.setRumble(RumbleType.kRightRumble, 0.0);
-        }
 
         double absXAXIS = Math.abs(xAxisScaled);
         double absYAXIS = Math.abs(yAxisScaled);
@@ -218,6 +210,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("xAxisDriver", absXAXIS);
         SmartDashboard.putNumber("yAxisDriver", absYAXIS);
         SmartDashboard.putNumber("RMB", driver.getRightTriggerAxis());
+        SmartDashboard.putNumber("Intake ON?", intakeOn);
 
      // try this instead, squared inputs may smooth the controls somewhat
      //   m_robotDrive.arcadeDrive(driver.getRawAxis(0)*driver.getRawAxis(0),driver.getRawAxis(1)*driver.getRawAxis(1));
@@ -225,25 +218,57 @@ public class Robot extends TimedRobot {
       //we would use armspeed to determine how fast the flapper works
         // we will use armMotor.set() to give speed. - is in?
                 
-        if (driver.getRightBumper()) {
+        if (driver.getRightBumper() || driver.getAButton()) {
             //intake on
+            intakeOn = 1;
             intakeMotor.set(ControlMode.PercentOutput,-1); 
         }
         else {
             if (driver.getLeftBumper()) {
             //intake reverse
+                intakeOn = 1;
                 intakeMotor.set(ControlMode.PercentOutput,1); }
             else {
+                intakeOn = 0;
+                if (intakeOn == 0) {
+                    if (rumbling == 0) {
+                        driver.setRumble(RumbleType.kLeftRumble, 0.0);
+                    }
+                    
+                }
                 intakeMotor.set(ControlMode.PercentOutput,0.0);
             } 
-        }               
-        if (driver.getRightTriggerAxis()==1){
+        }   
+        if (intakeOn == 1) {
+            driver.setRumble(RumbleType.kLeftRumble, 0.1);
+        }
+        
+
+        int onshooter = 0;
+        if (driver.getRightTriggerAxis() > 0) {
+            onshooter = 1;
             //shooter on
-            shooterMotor1.set(ControlMode.PercentOutput,1.0);
-            shooterMotor2.set(ControlMode.PercentOutput,1.0); }
+            shooterMotor1.set(ControlMode.PercentOutput,driver.getRightTriggerAxis());
+            if (driver.getRightTriggerAxis() < 1 & driver.getRightTriggerAxis() != 1) {
+                driver.setRumble(RumbleType.kBothRumble, 0.0);
+                driver.setRumble(RumbleType.kLeftRumble, driver.getRightTriggerAxis());
+            }
+            else if (driver.getRightTriggerAxis() == 1) {
+                driver.setRumble(RumbleType.kLeftRumble, 0.0);
+                driver.setRumble(RumbleType.kBothRumble, 1.0);
+            }
+            
+            shooterMotor2.set(ControlMode.PercentOutput,driver.getRightTriggerAxis()); }
         else {
+            onshooter = 0;
             shooterMotor1.set(ControlMode.PercentOutput,0.0);
+            if (rumbling == 0 & intakeOn == 0) {
+                driver.setRumble(RumbleType.kLeftRumble, 0.0);
+                driver.setRumble(RumbleType.kBothRumble, 0.0);
+            }
             shooterMotor2.set(ControlMode.PercentOutput,0.0);}
+
+            SmartDashboard.putNumber("Shooter On?", onshooter);
 
         //the arm control,
 
@@ -306,10 +331,20 @@ public void goTimer(int inVal){
 
     @Override
     public void testPeriodic() {
-
+    
         
 
         
         
     }
+   private void rumbleController(double seconds, double value) {
+       driver.setRumble(RumbleType.kLeftRumble, value);
+       rumbling = 1;
+
+       new Thread(() -> {
+           Timer.delay(seconds);
+           driver.setRumble(RumbleType.kLeftRumble, 0.0);
+           rumbling = 0;
+       }).start();
+   }
 }
