@@ -132,10 +132,18 @@ public class Robot extends TimedRobot {
     public void teleopInit() {
     }
 
+
+    private static void vribrate() {
+        for (var i = 0;) {
+
+        }
+    }
+
     /* (non-Javadoc)
      * @see edu.wpi.first.wpilibj.IterativeRobotBase#teleopPeriodic()
      */
     // bentroll is used for inverting controls (Dan)
+
     int bentroll=-1;
     double drive_speed=1;
     int car=0;
@@ -191,10 +199,26 @@ public class Robot extends TimedRobot {
         }    
         m_robotDrive.arcadeDrive(yAxisScaled, xAxisScaled);
 
-        if (xAxisScaled > 0) {
-            driver.setRumble(RumbleType.kLeftRumble, xAxisScaled);
+        if (driver.getRightTriggerAxis() > 0) {
+            driver.setRumble(RumbleType.kLeftRumble, driver.getRightTriggerAxis()*driver.getRightTriggerAxis());
         }
-        SmartDashboard.putNumber("xAxisDriver", xAxisScaled);
+        else {
+            driver.setRumble(RumbleType.kLeftRumble, 0.0);
+        }
+
+        if (driver.getRightTriggerAxis() == 1) {
+            driver.setRumble(RumbleType.kBothRumble, 1.0);
+        }
+        else {
+            driver.setRumble(RumbleType.kRightRumble, 0.0);
+        }
+
+        double absXAXIS = Math.abs(xAxisScaled);
+        double absYAXIS = Math.abs(yAxisScaled);
+
+        SmartDashboard.putNumber("xAxisDriver", absXAXIS);
+        SmartDashboard.putNumber("yAxisDriver", absYAXIS);
+        SmartDashboard.putNumber("RMB", driver.getRightTriggerAxis());
 
      // try this instead, squared inputs may smooth the controls somewhat
      //   m_robotDrive.arcadeDrive(driver.getRawAxis(0)*driver.getRawAxis(0),driver.getRawAxis(1)*driver.getRawAxis(1));
