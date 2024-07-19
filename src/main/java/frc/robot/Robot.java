@@ -143,6 +143,7 @@ public class Robot extends TimedRobot {
     // bentroll is used for inverting controls (Dan)
 
     int bentroll=-1;
+    double hello = 1;
     double drive_speed=1;
     int car=0;
     int pov = -1;
