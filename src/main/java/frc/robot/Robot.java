@@ -1,6 +1,9 @@
 package frc.robot;
 
 import java.nio.channels.Channel;
+
+import org.photonvision.PhotonCamera;
+
 //test
 import com.ctre.phoenix.motorcontrol.ControlMode;
 //import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -15,7 +18,7 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.cameraserver.CameraServer;
 //import edu.wpi.first.wpilibj.interfaces.Gyro;
 //import edu.wpi.first.wpilibj.DigitalInput;
-
+import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -108,12 +111,19 @@ public class Robot extends TimedRobot {
         //autoTimer.reset();
         startTime = Timer.getFPGATimestamp();
 
+        PortForwarder.add(5800, "photonvision.local", 5800);
+        
+
         
     }
 
     @Override
     public void autonomousPeriodic() {
         double time = Timer.getFPGATimestamp();
+
+        PhotonCamera camera = new PhotonCamera("photonvision");
+
+        var result = camera.getLatestResult();
         
         //Autonomous Move Forward
         if (Timer.getFPGATimestamp() - startTime < 2) {
@@ -171,7 +181,6 @@ public class Robot extends TimedRobot {
     int povleft = 270;
     int povright = 90;
     //
-
 
     //  ____  ____  _____ ____  _____ _____ ____  _ 
     // |  _ \|  _ \| ____/ ___|| ____|_   _/ ___|| |
