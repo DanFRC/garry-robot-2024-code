@@ -27,10 +27,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.CAN;
 
-//Network tables for limelight 3
-//import edu.wpi.first.networktables.NetworkTable;
-//import edu.wpi.first.networktables.NetworkTableEntry;
-//import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
+
+
+
 
 public class Robot extends TimedRobot {
     private static final String kDefaultAuto = "Default";
@@ -50,6 +53,7 @@ public class Robot extends TimedRobot {
     private double startTime;
     private double armSpeed = 0.64;
     private final XboxController driver = new XboxController(0);
+    private NetworkTable limelightTable;
     
     // create the VictorSPX motor controllers and assign their ports
     private final DigitalInput limitSwitchUpper = new DigitalInput(8);
@@ -83,6 +87,8 @@ public class Robot extends TimedRobot {
         SmartDashboard.putData("Auto choices", m_chooser);
        
         CameraServer.startAutomaticCapture("cam1",0);
+
+        NetworkTableInstance.getDefault().getTable("limelight").getEntry("<variablename>").getDouble(0);
     }
 
     @Override
@@ -108,6 +114,13 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         double time = Timer.getFPGATimestamp();
+        
+        //Autonomous Move Forward
+        if (Timer.getFPGATimestamp() - startTime < 2) {
+            m_robotDrive.arcadeDrive(0.5, 0);
+        } else {
+            m_robotDrive.stopMotor();
+        }
       
         switch (m_autoSelected) {
         case goStraightAuto:
@@ -151,7 +164,7 @@ public class Robot extends TimedRobot {
     int intakeOn = 0;
     @Override
     public void teleopPeriodic() {
-        
+
         // Invert Controls when a button is pressed
         if(driver.getXButtonPressed()) {
             rumbleController(0.1, 0.4);
