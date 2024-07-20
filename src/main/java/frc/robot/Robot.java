@@ -162,6 +162,57 @@ public class Robot extends TimedRobot {
     int pov = -1;
     int rumbling = 0;
     int intakeOn = 0;
+    int raising = 0;
+    int db = 0;
+
+    //POV Variables:
+    int povup = 0;
+    int povdown = 180;
+    int povleft = 270;
+    int povright = 90;
+    //
+
+
+    //  ____  ____  _____ ____  _____ _____ ____  _ 
+    // |  _ \|  _ \| ____/ ___|| ____|_   _/ ___|| |
+    // | |_) | |_) |  _| \___ \|  _|   | | \___ \| |
+    // |  __/|  _ <| |___ ___) | |___  | |  ___) |_|
+    // |_|   |_| \_\_____|____/|_____| |_| |____/(_)
+                                                 
+    //DAN NGUYEN
+
+    //PRESETS FOR RAISING THE ARM ARE TO BE PUT HERE//
+
+    //SECURITY FEATURES:
+    //I've added a debounce time to the code, to make sure only one preset can run at a time.
+
+    //TO ADD MORE PRESETS:
+    //Make a new double variable and set it to any time e.g., 1.5 Seconds, name it in order of how many presets there are
+    //If there are 10 Presets, name the new one preset11, if there are 2 presets, name it preset3.
+    //Go below and find the main code. Copy this code and place it under the pre-existing code:
+    //    if (driver.getPOV() == povup & db == 0) {
+    //       bentroll*=-1;
+    //       raiseArmfor(preset1);
+    //       debounce(preset1 + 0.2);
+    //    }
+    //Change presetx to the corresponding preset for both debounce, and raiseArmfor.
+    //Set the new pov, e.g., preset2 is set to povleft. so in the first line:
+    //if (driver.getPOV() == povup & db == 0) {
+    //                         ^
+    //Change the word that the arrow is pointing to, to the corresponding pov, for this case, it would be changed to povleft:
+    //if (driver.getPOV() == povleft & db == 0) {
+    
+    //preset1 is the first preset, which is triggered by POV 0 Degrees, See Below in teleopPeriodic() to see the code.
+    //Change the preset1 value to anything, it will raise the arm at 50% speed for preset1 seconds.
+
+
+
+
+
+
+    double preset1 = 1;
+
+
     @Override
     public void teleopPeriodic() {
 
@@ -180,6 +231,12 @@ public class Robot extends TimedRobot {
         if(driver.getYButtonPressed()) {
             rumbleController(0.2, 0.2);
             drive_speed=.5;
+        }
+
+        if (driver.getPOV() == povup & db == 0) {
+            bentroll*=-1;
+            raiseArmfor(preset1);
+            debounce(preset1 + 0.2);
         }
 
 
@@ -224,6 +281,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("yAxisDriver", absYAXIS);
         SmartDashboard.putNumber("RMB", driver.getRightTriggerAxis());
         SmartDashboard.putNumber("Intake ON?", intakeOn);
+        SmartDashboard.putNumber("raising", raising);
 
      // try this instead, squared inputs may smooth the controls somewhat
      //   m_robotDrive.arcadeDrive(driver.getRawAxis(0)*driver.getRawAxis(0),driver.getRawAxis(1)*driver.getRawAxis(1));
@@ -295,7 +353,7 @@ public class Robot extends TimedRobot {
                 leftArmMotor.set(ControlMode.PercentOutput,(armSpeed*driver.getRawAxis(5)));
                 rightArmMotor.set(ControlMode.PercentOutput,(armSpeed*driver.getRawAxis(5)));
             }
-            else {
+            else if (raising == 0){
                 leftArmMotor.set(ControlMode.PercentOutput,0.0);
                 rightArmMotor.set(ControlMode.PercentOutput,0.0);
             }
@@ -360,4 +418,31 @@ public void goTimer(int inVal){
            rumbling = 0;
        }).start();
    }
+    private void raiseArmfor(double seconds) {
+        if ((limitSwitchUpper.get())) {
+        leftArmMotor.set(ControlMode.PercentOutput,0.32);
+        rightArmMotor.set(ControlMode.PercentOutput,0.32);
+        driver.setRumble(RumbleType.kLeftRumble, 0.05);
+        raising = 1;
+        rumbling = 1;
+        }
+
+       new Thread(() -> {
+            Timer.delay(seconds);
+            leftArmMotor.set(ControlMode.PercentOutput,0.0);
+            rightArmMotor.set(ControlMode.PercentOutput,0.0);
+            driver.setRumble(RumbleType.kLeftRumble, 0.0);
+            raising = 0;
+            rumbling = 0;
+       }).start();
+    }
+
+    private void debounce(double seconds) {
+        db = 1;
+
+       new Thread(() -> {
+            Timer.delay(seconds);
+            db = 0;
+       }).start();
+    }
 }
