@@ -191,7 +191,8 @@ public class Robot extends TimedRobot {
     //DAN NGUYEN
 
     //PRESETS FOR RAISING THE ARM ARE TO BE PUT HERE//
-
+    double preset1 = 1;
+    
     //SECURITY FEATURES:
     //I've added a debounce time to the code, to make sure only one preset can run at a time.
 
@@ -214,12 +215,6 @@ public class Robot extends TimedRobot {
     //preset1 is the first preset, which is triggered by POV 0 Degrees, See Below in teleopPeriodic() to see the code.
     //Change the preset1 value to anything, it will raise the arm at 50% speed for preset1 seconds.
 
-
-
-
-
-
-    double preset1 = 1;
 
 
     @Override
