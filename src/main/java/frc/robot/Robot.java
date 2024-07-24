@@ -125,16 +125,18 @@ public class Robot extends TimedRobot {
 
         var result = camera.getLatestResult();
         
+      
+        switch (m_autoSelected) {
+        case goStraightAuto:
         //Autonomous Move Forward
         if (Timer.getFPGATimestamp() - startTime < 2) {
             m_robotDrive.arcadeDrive(0.5, 0);
         } else {
             m_robotDrive.stopMotor();
         }
-      
-        switch (m_autoSelected) {
-        case goStraightAuto:
         break;
+
+
 
         case goLeftAuto:
             
@@ -401,16 +403,10 @@ public void goTimer(int inVal){
 
     @Override
     public void testInit() {
-
     }
 
     @Override
     public void testPeriodic() {
-    
-        
-
-        
-        
     }
    private void rumbleController(double seconds, double value) {
        driver.setRumble(RumbleType.kLeftRumble, value);
@@ -423,9 +419,9 @@ public void goTimer(int inVal){
        }).start();
    }
     private void raiseArmfor(double seconds) {
-        if ((limitSwitchUpper.get())) {
-        leftArmMotor.set(ControlMode.PercentOutput,0.32);
-        rightArmMotor.set(ControlMode.PercentOutput,0.32);
+        if ((limitSwitchUpper.get()) || (limitSwitchLower.get())) {
+        leftArmMotor.set(ControlMode.PercentOutput,-0.32);
+        rightArmMotor.set(ControlMode.PercentOutput,-0.32);
         driver.setRumble(RumbleType.kLeftRumble, 0.05);
         raising = 1;
         rumbling = 1;
