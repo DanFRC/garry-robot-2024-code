@@ -15,6 +15,7 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 //import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 //import com.ctr.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj.simulation.DutyCycleEncoderSim;
 import edu.wpi.first.cameraserver.CameraServer;
 //import edu.wpi.first.wpilibj.interfaces.Gyro;
 //import edu.wpi.first.wpilibj.DigitalInput;
@@ -27,6 +28,8 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.CAN;
 
@@ -56,6 +59,7 @@ public class Robot extends TimedRobot {
     private double startTime;
     private double armSpeed = 0.64;
     private final XboxController driver = new XboxController(0);
+    private final DutyCycleEncoder encoder = new DutyCycleEncoder(7);
     private NetworkTable limelightTable;
     
     // create the VictorSPX motor controllers and assign their ports
@@ -176,6 +180,11 @@ public class Robot extends TimedRobot {
     int intakeOn = 0;
     int raising = 0;
     int db = 0;
+    int diffs = 0;
+    double differenceval = 0;
+
+    //Encoder Value
+    double encoderval = encoder.get();
 
     //POV Variables:
     int povup = 0;
@@ -239,10 +248,9 @@ public class Robot extends TimedRobot {
             drive_speed=.5;
         }
 
-        if (driver.getPOV() == povup & db == 0) {
-            bentroll*=-1;
-            raiseArmfor(preset1);
-            debounce(preset1 + 0.2);
+        if (driver.getPOV() == povup) {
+            encoderval = encoder.get();
+            raiseArmto(0.2);
         }
 
 
@@ -250,6 +258,8 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("inverted?", bentroll);
         SmartDashboard.putNumber("drive_speed", drive_speed);
         SmartDashboard.putNumber("rumbling?", rumbling);
+        SmartDashboard.putNumber("encoder", encoder.get());
+        SmartDashboard.putNumber("What is diff?", differenceval);
 
 
         // New driving method is being used, same concept but
@@ -288,7 +298,8 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("RMB", driver.getRightTriggerAxis());
         SmartDashboard.putNumber("Intake ON?", intakeOn);
         SmartDashboard.putNumber("raising", raising);
-
+        SmartDashboard.putBoolean("limitswitchUp", limitSwitchUpper.get());
+        SmartDashboard.putNumber("diffs", diffs);
      // try this instead, squared inputs may smooth the controls somewhat
      //   m_robotDrive.arcadeDrive(driver.getRawAxis(0)*driver.getRawAxis(0),driver.getRawAxis(1)*driver.getRawAxis(1));
       //now for the flapper (wrong '20s')
@@ -419,12 +430,19 @@ public void goTimer(int inVal){
        }).start();
    }
     private void raiseArmfor(double seconds) {
-        if ((limitSwitchUpper.get()) || (limitSwitchLower.get())) {
-        leftArmMotor.set(ControlMode.PercentOutput,-0.32);
-        rightArmMotor.set(ControlMode.PercentOutput,-0.32);
-        driver.setRumble(RumbleType.kLeftRumble, 0.05);
-        raising = 1;
-        rumbling = 1;
+        if ((limitSwitchUpper.get()) == true) {
+            leftArmMotor.set(ControlMode.PercentOutput,-0.32);
+            rightArmMotor.set(ControlMode.PercentOutput,-0.32);
+            driver.setRumble(RumbleType.kLeftRumble, 0.05);
+            raising = 1;
+            rumbling = 1;
+        }
+        else {
+            leftArmMotor.set(ControlMode.PercentOutput,0.0);
+            rightArmMotor.set(ControlMode.PercentOutput,0.0);
+            driver.setRumble(RumbleType.kLeftRumble, 0.0);
+            raising = 0;
+            rumbling = 0;
         }
 
        new Thread(() -> {
@@ -437,6 +455,20 @@ public void goTimer(int inVal){
        }).start();
     }
 
+    private void raiseArmto(double degrees) {
+        double diff = encoderval-degrees;
+        if (encoderval > 0) {
+            diffs = -1;
+            differenceval = diff;
+        }
+        else if (encoderval < 0) {
+            diffs = 1;
+            differenceval = diff;
+        }
+    }
+
+
+    
     private void debounce(double seconds) {
         db = 1;
 
