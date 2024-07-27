@@ -190,11 +190,13 @@ public class Robot extends TimedRobot {
         switch (m_autoSelected) {
         case goStraightAuto:
         //Autonomous Move Forward
-        if (Timer.getFPGATimestamp() - startTime < 2) {
             m_robotDrive.arcadeDrive(0.5, 0);
-        } else {
-            m_robotDrive.stopMotor();
-        }
+
+        new Thread(() -> {
+            Timer.delay(1);
+            m_robotDrive.arcadeDrive(0.0, 0.0);
+       }).start();
+            
         break;
 
 
