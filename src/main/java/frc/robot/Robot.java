@@ -95,12 +95,76 @@ public class Robot extends TimedRobot {
        
         CameraServer.startAutomaticCapture("cam1",0);
 
-        NetworkTableInstance.getDefault().getTable("limelight").getEntry("<variablename>").getDouble(0);
+        NetworkTableInstance inst = NetworkTableInstance.getDefault();
+        NetworkTable table = inst.getTable("Shuffleboard");
+        NetworkTableEntry textEntry = table.getEntry("Text");
+        
+        textEntry.setString("ben");
     }
 
     @Override
     public void robotPeriodic() {
+
+        if (unidegrees != 0) {
+        diff = encoder.get() - unidegrees;
+        }
+        int dir = 0;
+        int upodwn = 0;
+        
+        if (diff > 0 & upodwn == 0) {
+            upodwn = 1;
+            if (!limitSwitchUpper.get() || diff < 0) {
+
+                leftArmMotor.set(ControlMode.PercentOutput, 0.0);
+                rightArmMotor.set(ControlMode.PercentOutput, 0.0);
+                unidegrees = 0;
+                dir = 0;
+                differenceval = 0;
+                upodwn = 0;
+                return;
+            }
+            dir = -1;
+        } else if (diff < 0 & upodwn == 0) {
+            upodwn = -1;
+            if (limitSwitchLower.get() || diff > 0) {
+
+                leftArmMotor.set(ControlMode.PercentOutput, 0.0);
+                rightArmMotor.set(ControlMode.PercentOutput, 0.0);
+                unidegrees = 0;
+                dir = 0;
+                differenceval = 0;
+                upodwn = 0;
+                return;
+            }
+            dir = 1;
+        } else {
+
+            dir = 0;
+            return;
+        }
+        
+        differenceval = Math.abs(diff);
+    
+        if (dir != 0) {
+            raising = 1;
+        }
+        else {
+            raising = 0;
+        }
+
+        // Calculate the speed based on half of armSpeed
+        double speed = armSpeed * 0.5;
+        if (dir != 0) {
+        leftArmMotor.set(ControlMode.PercentOutput, speed * dir);
+        rightArmMotor.set(ControlMode.PercentOutput, speed * dir);
+        }
+        else {
+        leftArmMotor.set(ControlMode.PercentOutput, 0);
+        rightArmMotor.set(ControlMode.PercentOutput, 0);
+        }
     }
+
+    
 
 
     //Initial startup for autonomous
@@ -180,11 +244,12 @@ public class Robot extends TimedRobot {
     int intakeOn = 0;
     int raising = 0;
     int db = 0;
-    int diffs = 0;
+    double unidegrees = 0;
     double differenceval = 0;
-
-    //Encoder Value
-    double encoderval = encoder.get();
+    double diff = 0;
+    int stop = 1;
+    int start = 0;
+    int arming = 1;
 
     //POV Variables:
     int povup = 0;
@@ -249,7 +314,6 @@ public class Robot extends TimedRobot {
         }
 
         if (driver.getPOV() == povup) {
-            encoderval = encoder.get();
             raiseArmto(0.2);
         }
 
@@ -299,7 +363,6 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Intake ON?", intakeOn);
         SmartDashboard.putNumber("raising", raising);
         SmartDashboard.putBoolean("limitswitchUp", limitSwitchUpper.get());
-        SmartDashboard.putNumber("diffs", diffs);
      // try this instead, squared inputs may smooth the controls somewhat
      //   m_robotDrive.arcadeDrive(driver.getRawAxis(0)*driver.getRawAxis(0),driver.getRawAxis(1)*driver.getRawAxis(1));
       //now for the flapper (wrong '20s')
@@ -455,16 +518,11 @@ public void goTimer(int inVal){
        }).start();
     }
 
+
     private void raiseArmto(double degrees) {
-        double diff = encoderval-degrees;
-        if (encoderval > 0) {
-            diffs = -1;
-            differenceval = diff;
-        }
-        else if (encoderval < 0) {
-            diffs = 1;
-            differenceval = diff;
-        }
+        unidegrees = degrees;
+        start = 1;
+
     }
 
 
