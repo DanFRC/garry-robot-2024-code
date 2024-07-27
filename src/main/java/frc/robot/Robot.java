@@ -190,12 +190,19 @@ public class Robot extends TimedRobot {
         switch (m_autoSelected) {
         case goStraightAuto:
         //Autonomous Move Forward
+
+        new Thread(() -> {
+            Timer.delay(1);
             m_robotDrive.arcadeDrive(0.5, 0);
+
+            raiseArmto(0.2);
 
         new Thread(() -> {
             Timer.delay(1);
             m_robotDrive.arcadeDrive(0.0, 0.0);
        }).start();
+       }).start();
+
             
         break;
 
