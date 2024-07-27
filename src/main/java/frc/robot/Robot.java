@@ -108,15 +108,15 @@ public class Robot extends TimedRobot {
         if (unidegrees != 0) {
         diff = encoder.get() - unidegrees;
         }
-        int dir = 0;
-        int upodwn = 0;
+
         
-        if (diff > 0 & upodwn == 0) {
+        if (start == 1 & diff > 0 & upodwn == 0) {
             upodwn = 1;
             if (!limitSwitchUpper.get() || diff < 0) {
 
                 leftArmMotor.set(ControlMode.PercentOutput, 0.0);
                 rightArmMotor.set(ControlMode.PercentOutput, 0.0);
+                start = 0;
                 unidegrees = 0;
                 dir = 0;
                 differenceval = 0;
@@ -124,12 +124,13 @@ public class Robot extends TimedRobot {
                 return;
             }
             dir = -1;
-        } else if (diff < 0 & upodwn == 0) {
+        } else if (start == 1 & diff < 0 & upodwn == 0) {
             upodwn = -1;
             if (limitSwitchLower.get() || diff > 0) {
 
                 leftArmMotor.set(ControlMode.PercentOutput, 0.0);
                 rightArmMotor.set(ControlMode.PercentOutput, 0.0);
+                start = 0;
                 unidegrees = 0;
                 dir = 0;
                 differenceval = 0;
@@ -137,10 +138,6 @@ public class Robot extends TimedRobot {
                 return;
             }
             dir = 1;
-        } else {
-
-            dir = 0;
-            return;
         }
         
         differenceval = Math.abs(diff);
@@ -157,10 +154,6 @@ public class Robot extends TimedRobot {
         if (dir != 0) {
         leftArmMotor.set(ControlMode.PercentOutput, speed * dir);
         rightArmMotor.set(ControlMode.PercentOutput, speed * dir);
-        }
-        else {
-        leftArmMotor.set(ControlMode.PercentOutput, 0);
-        rightArmMotor.set(ControlMode.PercentOutput, 0);
         }
     }
 
@@ -250,6 +243,8 @@ public class Robot extends TimedRobot {
     int stop = 1;
     int start = 0;
     int arming = 1;
+    int dir = 0;
+    int upodwn = 0;
 
     //POV Variables:
     int povup = 0;
