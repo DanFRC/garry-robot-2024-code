@@ -274,6 +274,7 @@ public class Robot extends TimedRobot {
     int povright = 90;
     int currentPOV = 0;
     double test = 0.5;
+    double test2 = 0.6;
     //
 
     //  ____  ____  _____ ____  _____ _____ ____  _ 
