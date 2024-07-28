@@ -153,7 +153,7 @@ public class Robot extends TimedRobot {
                 return;
             }
         }
-        
+
         if (upodwn != 0) { 
             if (!limitSwitchLower.get()) {
                 leftArmMotor.set(ControlMode.PercentOutput, 0.0);
@@ -272,6 +272,7 @@ public class Robot extends TimedRobot {
     int povdown = 180;
     int povleft = 270;
     int povright = 90;
+    int currentPOV = 0;
     double test = 0.5;
     //
 
