@@ -225,9 +225,10 @@ public class Robot extends TimedRobot {
                         doOnce = 1;
                         
                         AUTOraiseArmandShoot(0.3);
+                        m_robotDrive.arcadeDrive(test, 0.0);
                     }
 
-
+ 
 
             break;
         }
@@ -266,6 +267,10 @@ public class Robot extends TimedRobot {
     int dir = 0;
     int upodwn = 0;
     int doOnce = 0;
+    double shootNow = 0;
+    double waittime = 0;
+    //For AUTOshooting
+    int shooterDB = 0;
 
     //POV Variables:
     int povup = 0;
@@ -320,6 +325,7 @@ public class Robot extends TimedRobot {
         if(driver.getXButtonPressed()) {
             rumbleController(0.1, 0.4);
             bentroll*=-1;
+            doOnce = 0;
         }
         //Set Drive Speed to 100%
         if(driver.getBButtonPressed()) {
@@ -334,7 +340,7 @@ public class Robot extends TimedRobot {
         }
 
         if (driver.getPOV() == povup) {
-            raiseArmto(0.165);
+            AUTOraiseArmandShoot(0.165);
         }
         if (driver.getPOV() == povdown) {
             raiseArmto(0.3);
@@ -403,8 +409,8 @@ public class Robot extends TimedRobot {
             if (driver.getLeftBumper()) {
             //intake reverse
                 intakeOn = 1;
-                intakeMotor.set(ControlMode.PercentOutput,1); }
-            else {
+                intakeMotor.set(ControlMode.PercentOutput,0.4); }
+            else if (shooterDB == 0) {
                 intakeOn = 0;
                 if (intakeOn == 0) {
                     if (rumbling == 0) {
@@ -435,7 +441,7 @@ public class Robot extends TimedRobot {
             }
             
             shooterMotor2.set(ControlMode.PercentOutput,driver.getRightTriggerAxis()); }
-        else {
+        else if (shooterDB == 0) {
             onshooter = 0;
             shooterMotor1.set(ControlMode.PercentOutput,0.0);
             if (rumbling == 0 & intakeOn == 0) {
@@ -550,21 +556,35 @@ public void goTimer(int inVal){
 
     }
 
+
     private void AUTOraiseArmandShoot(double degrees) {
+        shooterDB = 1;
         unidegrees = degrees;
         start = 1;
+        shootNow = encoder.get() - unidegrees;
+
+        if (Math.abs(shootNow) < 0.15) {
+            waittime = 0.5;
+        }
+        else if (Math.abs(shootNow) < 0.3 && (Math.abs(shootNow) > 0.15)) {
+            waittime = 1.5;
+        }
+        else {
+            waittime = 2;
+        }
 
         shooterMotor2.set(ControlMode.PercentOutput, 1);
         shooterMotor1.set(ControlMode.PercentOutput, 1);
         new Thread(() -> {
-            Timer.delay(1.5);
+            Timer.delay(waittime);
 
             intakeMotor.set(ControlMode.PercentOutput,-1);
-            shooterMotor2.set(ControlMode.PercentOutput, 0.0);
-            shooterMotor1.set(ControlMode.PercentOutput, 0.0);
             new Thread(() -> {
                 Timer.delay(1);
                 intakeMotor.set(ControlMode.PercentOutput,0.0);
+                shooterMotor2.set(ControlMode.PercentOutput, 0.0);
+                shooterMotor1.set(ControlMode.PercentOutput, 0.0);
+                shooterDB = 0;
             }).start();
         }).start();
 
