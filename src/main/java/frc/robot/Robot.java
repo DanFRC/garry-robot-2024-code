@@ -112,31 +112,9 @@ public class Robot extends TimedRobot {
         
         if (start == 1 & diff > 0 & upodwn == 0) {
             upodwn = 1;
-            if (!limitSwitchUpper.get() || diff < 0) {
-
-                leftArmMotor.set(ControlMode.PercentOutput, 0.0);
-                rightArmMotor.set(ControlMode.PercentOutput, 0.0);
-                start = 0;
-                unidegrees = 0;
-                dir = 0;
-                differenceval = 0;
-                upodwn = 0;
-                return;
-            }
             dir = -1;
         } else if (start == 1 & diff < 0 & upodwn == 0) {
             upodwn = -1;
-            if (limitSwitchLower.get() || diff > 0) {
-
-                leftArmMotor.set(ControlMode.PercentOutput, 0.0);
-                rightArmMotor.set(ControlMode.PercentOutput, 0.0);
-                start = 0;
-                unidegrees = 0;
-                dir = 0;
-                differenceval = 0;
-                upodwn = 0;
-                return;
-            }
             dir = 1;
         }
         
@@ -149,11 +127,52 @@ public class Robot extends TimedRobot {
             raising = 0;
         }
 
+        if (upodwn == 1) {
+                if (!limitSwitchUpper.get() || diff < 0) {
+
+                leftArmMotor.set(ControlMode.PercentOutput, 0.0);
+                rightArmMotor.set(ControlMode.PercentOutput, 0.0);
+                start = 0;
+                unidegrees = 0;
+                dir = 0;
+                differenceval = 0;
+                upodwn = 0;
+                return;
+            }
+        }
+        else if (upodwn == -1) {
+                if (diff > 0) {
+
+                leftArmMotor.set(ControlMode.PercentOutput, 0.0);
+                rightArmMotor.set(ControlMode.PercentOutput, 0.0);
+                start = 0;
+                unidegrees = 0;
+                dir = 0;
+                differenceval = 0;
+                upodwn = 0;
+                return;
+            }
+        }
+
+        if (upodwn != 0) { 
+            if (!limitSwitchLower.get()) {
+                leftArmMotor.set(ControlMode.PercentOutput, 0.0);
+                rightArmMotor.set(ControlMode.PercentOutput, 0.0);
+
+            }
+            else if (!limitSwitchUpper.get()) {
+                leftArmMotor.set(ControlMode.PercentOutput, 0.0);
+                rightArmMotor.set(ControlMode.PercentOutput, 0.0);
+                
+            }
+        }
+        
+
         // Calculate the speed based on half of armSpeed
-        double speed = armSpeed * 0.5;
+        double speed = armSpeed * 1;
         if (dir != 0) {
-        leftArmMotor.set(ControlMode.PercentOutput, speed * dir);
-        rightArmMotor.set(ControlMode.PercentOutput, speed * dir);
+        leftArmMotor.set(ControlMode.PercentOutput, speed * -dir);
+        rightArmMotor.set(ControlMode.PercentOutput, speed * -dir);
         }
     }
 
@@ -181,27 +200,11 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         double time = Timer.getFPGATimestamp();
-
-        PhotonCamera camera = new PhotonCamera("photonvision");
-
-        var result = camera.getLatestResult();
         
       
         switch (m_autoSelected) {
         case goStraightAuto:
-        //Autonomous Move Forward
 
-        new Thread(() -> {
-            Timer.delay(1);
-            m_robotDrive.arcadeDrive(0.5, 0);
-
-            raiseArmto(0.2);
-
-        new Thread(() -> {
-            Timer.delay(1);
-            m_robotDrive.arcadeDrive(0.0, 0.0);
-       }).start();
-       }).start();
 
             
         break;
@@ -217,7 +220,15 @@ public class Robot extends TimedRobot {
         break;
 
         default:
-            System.out.println("Auto does not exist");
+                    //Autonomous Move Forward
+                    if (doOnce == 0) {
+                        doOnce = 1;
+                        
+                        AUTOraiseArmandShoot(0.3);
+                    }
+
+
+
             break;
         }
     }
@@ -254,12 +265,14 @@ public class Robot extends TimedRobot {
     int arming = 1;
     int dir = 0;
     int upodwn = 0;
+    int doOnce = 0;
 
     //POV Variables:
     int povup = 0;
     int povdown = 180;
     int povleft = 270;
     int povright = 90;
+    double test = 0.5;
     //
 
     //  ____  ____  _____ ____  _____ _____ ____  _ 
@@ -275,6 +288,7 @@ public class Robot extends TimedRobot {
     
     //SECURITY FEATURES:
     //I've added a debounce time to the code, to make sure only one preset can run at a time.
+    //WARNING DO NOT CHANGE VALUES OUT OF THIS RANGE: 0.4 - 0.1
 
     //TO ADD MORE PRESETS:
     //Make a new double variable and set it to any time e.g., 1.5 Seconds, name it in order of how many presets there are
@@ -318,7 +332,10 @@ public class Robot extends TimedRobot {
         }
 
         if (driver.getPOV() == povup) {
-            raiseArmto(0.2);
+            raiseArmto(0.165);
+        }
+        if (driver.getPOV() == povdown) {
+            raiseArmto(0.3);
         }
 
 
@@ -327,7 +344,9 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("drive_speed", drive_speed);
         SmartDashboard.putNumber("rumbling?", rumbling);
         SmartDashboard.putNumber("encoder", encoder.get());
-        SmartDashboard.putNumber("What is diff?", differenceval);
+        SmartDashboard.putNumber("What is diff?", diff);
+        SmartDashboard.putNumber("upodwn", upodwn);
+        SmartDashboard.putBoolean("limitswitchlower", limitSwitchLower.get());
 
 
         // New driving method is being used, same concept but
@@ -372,7 +391,7 @@ public class Robot extends TimedRobot {
       //now for the flapper (wrong '20s')
       //we would use armspeed to determine how fast the flapper works
         // we will use armMotor.set() to give speed. - is in?
-                
+              
         if (driver.getRightBumper() || driver.getAButton()) {
             //intake on
             intakeOn = 1;
@@ -527,6 +546,30 @@ public void goTimer(int inVal){
         unidegrees = degrees;
         start = 1;
 
+    }
+
+    private void AUTOraiseArmandShoot(double degrees) {
+        unidegrees = degrees;
+        start = 1;
+
+        shooterMotor2.set(ControlMode.PercentOutput, 1);
+        shooterMotor1.set(ControlMode.PercentOutput, 1);
+        new Thread(() -> {
+            Timer.delay(1.5);
+
+            intakeMotor.set(ControlMode.PercentOutput,-1);
+            shooterMotor2.set(ControlMode.PercentOutput, 0.0);
+            shooterMotor1.set(ControlMode.PercentOutput, 0.0);
+            new Thread(() -> {
+                Timer.delay(1);
+                intakeMotor.set(ControlMode.PercentOutput,0.0);
+            }).start();
+        }).start();
+
+    }
+
+    private void moveForward(double seconds) {
+            m_robotDrive.arcadeDrive(0.7, 0);
     }
 
 
