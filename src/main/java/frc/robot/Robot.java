@@ -141,7 +141,7 @@ public class Robot extends TimedRobot {
             }
         }
         else if (upodwn == -1) {
-                if (diff > 0) {
+                if (!limitSwitchLower.get() || diff > 0) {
 
                 leftArmMotor.set(ControlMode.PercentOutput, 0.0);
                 rightArmMotor.set(ControlMode.PercentOutput, 0.0);
