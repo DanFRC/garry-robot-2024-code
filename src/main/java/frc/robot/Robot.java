@@ -174,6 +174,13 @@ public class Robot extends TimedRobot {
         leftArmMotor.set(ControlMode.PercentOutput, speed * -dir);
         rightArmMotor.set(ControlMode.PercentOutput, speed * -dir);
         }
+
+        if (moving == 1) {
+            m_robotDrive.arcadeDrive(rb_speed, rb_turn);
+        }
+        else if (moving == 0 & autoEnabled == 1) {
+            m_robotDrive.arcadeDrive(0.0, 0.0);
+        }
     }
 
     
@@ -199,6 +206,9 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
+        SmartDashboard.putNumber("moving?", moving);
+        SmartDashboard.putNumber("speed", rb_speed);
+        SmartDashboard.putNumber("speed", rb_turn);
         double time = Timer.getFPGATimestamp();
         
       
@@ -223,15 +233,31 @@ public class Robot extends TimedRobot {
                     //Autonomous Move Forward
                     if (doOnce == 0) {
                         doOnce = 1;
-                        
-                        AUTOraiseArmandShoot(0.3);
-                        m_robotDrive.arcadeDrive(test, 0.0);
+                        autoEnabled = 1;
+                        new Thread(() ->{
+                            Timer.delay(0.3);
+                            AUTOraiseArmandShoot(0.185);
+                            autoEnabled = 0;
+                        }).start();
                     }
 
  
 
             break;
         }
+    }
+
+    private void drive_to(double seconds, double mov_turn, double mov_speed) {
+        rb_speed = mov_speed;
+        rb_turn = mov_turn;
+        moving = 1;
+        
+        new Thread(() -> {
+            Timer.delay(seconds);
+            moving = 0;
+            rb_speed = 0;
+            rb_turn = 0;
+        }).start();
     }
 
 
@@ -269,6 +295,11 @@ public class Robot extends TimedRobot {
     int doOnce = 0;
     double shootNow = 0;
     double waittime = 0;
+    //Moving Forward Function
+    int moving = 0;
+    double rb_speed = 0;
+    double rb_turn = 0;
+    int autoEnabled = 0;
     //For AUTOshooting
     int shooterDB = 0;
 
@@ -295,7 +326,7 @@ public class Robot extends TimedRobot {
     
     //SECURITY FEATURES:
     //I've added a debounce time to the code, to make sure only one preset can run at a time.
-    //WARNING DO NOT CHANGE VALUES OUT OF THIS RANGE: 0.4 - 0.1
+    //WARNING DO NOT CHANGE VALUES OUT OF THIS RANGE: 0.38 - 0.16
 
     //TO ADD MORE PRESETS:
     //Make a new double variable and set it to any time e.g., 1.5 Seconds, name it in order of how many presets there are
@@ -388,8 +419,8 @@ public class Robot extends TimedRobot {
         double absXAXIS = Math.abs(xAxisScaled);
         double absYAXIS = Math.abs(yAxisScaled);
 
-        SmartDashboard.putNumber("xAxisDriver", absXAXIS);
-        SmartDashboard.putNumber("yAxisDriver", absYAXIS);
+        SmartDashboard.putNumber("xAxisDriver", xAxisScaled);
+        SmartDashboard.putNumber("yAxisDriver", yAxisScaled);
         SmartDashboard.putNumber("RMB", driver.getRightTriggerAxis());
         SmartDashboard.putNumber("Intake ON?", intakeOn);
         SmartDashboard.putNumber("raising", raising);
@@ -510,9 +541,18 @@ public void goTimer(int inVal){
     public void testInit() {
     }
 
+
+
+
+
     @Override
     public void testPeriodic() {
     }
+
+
+
+
+
    private void rumbleController(double seconds, double value) {
        driver.setRumble(RumbleType.kLeftRumble, value);
        rumbling = 1;
@@ -564,10 +604,10 @@ public void goTimer(int inVal){
         shootNow = encoder.get() - unidegrees;
 
         if (Math.abs(shootNow) < 0.15) {
-            waittime = 0.5;
+            waittime = 2;
         }
         else if (Math.abs(shootNow) < 0.3 && (Math.abs(shootNow) > 0.15)) {
-            waittime = 1.5;
+            waittime = 2;
         }
         else {
             waittime = 2;
@@ -590,9 +630,7 @@ public void goTimer(int inVal){
 
     }
 
-    private void moveForward(double seconds) {
-            m_robotDrive.arcadeDrive(0.7, 0);
-    }
+    
 
 
     
