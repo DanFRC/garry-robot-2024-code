@@ -2,6 +2,8 @@ package frc.robot;
 
 import java.nio.channels.Channel;
 
+import javax.print.attribute.standard.MediaSize.Other;
+
 import org.photonvision.PhotonCamera;
 
 //test
@@ -295,6 +297,7 @@ public class Robot extends TimedRobot {
     int doOnce = 0;
     double shootNow = 0;
     double waittime = 0;
+    int driving = 0;
     //Moving Forward Function
     int moving = 0;
     double rb_speed = 0;
@@ -400,6 +403,8 @@ public class Robot extends TimedRobot {
         // doesn't matter if you move the joystick left or right, you will always go one direction.
         // So if the joystick is right, it will multiply the value by -1 to make the robot move the other direction.
         // This is the same for driver.getLeftY, but except on the up-down axis.
+
+        //Math.abs(xAxisScaled)/4
         if (driver.getLeftX() < 0) {
             xAxisScaled = (driver.getLeftX()*driver.getLeftX());
         }
@@ -415,9 +420,41 @@ public class Robot extends TimedRobot {
         }    
         m_robotDrive.arcadeDrive(yAxisScaled, xAxisScaled);
 
-
         double absXAXIS = Math.abs(xAxisScaled);
         double absYAXIS = Math.abs(yAxisScaled);
+
+        double otherabsXASIX = Math.abs(driver.getRightX());
+        double otherabsYASIX = Math.abs(driver.getRightY());
+
+
+
+        if (absYAXIS > 0.2) {
+            driving = 1;
+            rumbling = 1;
+            driver.setRumble(RumbleType.kLeftRumble, absYAXIS);
+        }
+        else if (absXAXIS > 0.2) {
+            driving = 1;
+            rumbling = 1;
+            driver.setRumble(RumbleType.kLeftRumble, absXAXIS);
+        }
+        else if (otherabsXASIX > 0.07) {
+            driving = 1;
+            rumbling = 1;
+            driver.setRumble(RumbleType.kLeftRumble, otherabsXASIX/4);
+        }
+        else if (otherabsYASIX > 0.07) {
+            driving = 1;
+            rumbling = 1;
+            driver.setRumble(RumbleType.kLeftRumble, otherabsYASIX/4);
+        }
+        else {
+            if (driving == 1) {
+                rumbling = 0;
+            }
+            driving = 0;
+        }
+
 
         SmartDashboard.putNumber("xAxisDriver", xAxisScaled);
         SmartDashboard.putNumber("yAxisDriver", yAxisScaled);
@@ -437,10 +474,17 @@ public class Robot extends TimedRobot {
             intakeMotor.set(ControlMode.PercentOutput,-1); 
         }
         else {
-            if (driver.getLeftBumper()) {
+            if (driver.getLeftBumper() || driver.getLeftTriggerAxis() > 0) {
             //intake reverse
+                if (driver.getLeftBumper()) {
                 intakeOn = 1;
-                intakeMotor.set(ControlMode.PercentOutput,0.4); }
+                intakeMotor.set(ControlMode.PercentOutput,0.4);
+                }
+                else if (driver.getLeftTriggerAxis() > 0) {
+                intakeOn = 1;
+                intakeMotor.set(ControlMode.PercentOutput,driver.getLeftTriggerAxis());
+                }
+            }
             else if (shooterDB == 0) {
                 intakeOn = 0;
                 if (intakeOn == 0) {
