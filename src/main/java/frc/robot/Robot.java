@@ -108,7 +108,7 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
 
         if (unidegrees != 0) {
-        diff = encoder.get() - unidegrees;
+        diff = degree - unidegrees;
         }
 
         
@@ -143,7 +143,7 @@ public class Robot extends TimedRobot {
             }
         }
         else if (upodwn == -1) {
-                if (!limitSwitchUpper.get() || diff+0.02 > 0) {
+                if (!limitSwitchUpper.get() || diff+2 > 0) {
 
                 leftArmMotor.set(ControlMode.PercentOutput, 0.0);
                 rightArmMotor.set(ControlMode.PercentOutput, 0.0);
@@ -189,14 +189,8 @@ public class Robot extends TimedRobot {
         double encodervalue = encoder.get();
             // Calculations For Converting Encoder Values to Degrees (Becareful When changing the values)
             if (encodervalue > 0) {
-                //EDIT THE VALUES WITHIN THESE COMMENTS
-                double minValue = 0.15;
-                double maxValue = 0.4;
-                double minDegree = 0;
-                double maxDegree = 90;
-                //EDIT THE VALUES WITHIN THESE COMMENTS
 
-                double degree = ((encodervalue - minValue) / (maxValue - minValue)) * (maxDegree - minDegree) + minDegree;
+                degree = ((encodervalue - minValue) / (maxValue - minValue)) * (maxDegree - minDegree) + minDegree;
 
                 SmartDashboard.putNumber("Encoder Degrees", degree);
             }
@@ -255,7 +249,7 @@ public class Robot extends TimedRobot {
                         autoEnabled = 1;
                         new Thread(() ->{
                             Timer.delay(0.3);
-                            AUTOraiseArmandShoot(0.185);
+                            AUTOraiseArmandShoot(12.6);
                             autoEnabled = 0;
                         }).start();
                     }
@@ -294,6 +288,15 @@ public class Robot extends TimedRobot {
      */
     // bentroll is used for inverting controls (Dan)
 
+    //Encoder Calculations:
+    //EDIT THE VALUES WITHIN THESE COMMENTS
+    double minValue = 0.15;
+    double maxValue = 0.4;
+    double minDegree = 0;
+    double maxDegree = 90;
+    //EDIT THE VALUES WITHIN THESE COMMENTS
+    double degree = 0;
+    //Encoder Calculations:
     int bentroll=-1;
     double hello = 1;
     double drive_speed=1;
