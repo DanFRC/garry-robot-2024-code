@@ -143,7 +143,7 @@ public class Robot extends TimedRobot {
             }
         }
         else if (upodwn == -1) {
-                if (!limitSwitchUpper.get() || diff+0.05 > 0) {
+                if (!limitSwitchUpper.get() || diff+0.02 > 0) {
 
                 leftArmMotor.set(ControlMode.PercentOutput, 0.0);
                 rightArmMotor.set(ControlMode.PercentOutput, 0.0);
@@ -167,6 +167,8 @@ public class Robot extends TimedRobot {
                 rightArmMotor.set(ControlMode.PercentOutput, 0.0);
                 
             }
+
+
         }
         
 
@@ -183,6 +185,21 @@ public class Robot extends TimedRobot {
         else if (moving == 0 & autoEnabled == 1) {
             m_robotDrive.arcadeDrive(0.0, 0.0);
         }
+
+        double encodervalue = encoder.get();
+            // Calculations For Converting Encoder Values to Degrees (Becareful When changing the values)
+            if (encodervalue > 0) {
+                //EDIT THE VALUES WITHIN THESE COMMENTS
+                double minValue = 0.15;
+                double maxValue = 0.4;
+                double minDegree = 0;
+                double maxDegree = 90;
+                //EDIT THE VALUES WITHIN THESE COMMENTS
+
+                double degree = ((encodervalue - minValue) / (maxValue - minValue)) * (maxDegree - minDegree) + minDegree;
+
+                SmartDashboard.putNumber("Encoder Degrees", degree);
+            }
     }
 
     
