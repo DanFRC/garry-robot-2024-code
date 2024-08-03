@@ -61,6 +61,7 @@ public class Robot extends TimedRobot {
     private double startTime;
     private double armSpeed = 0.64;
     private final XboxController driver = new XboxController(0);
+    PhotonCamera camera = new PhotonCamera("photonvision");
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(7);
     private NetworkTable limelightTable;
     
@@ -185,7 +186,7 @@ public class Robot extends TimedRobot {
         else if (moving == 0 & autoEnabled == 1) {
             m_robotDrive.arcadeDrive(0.0, 0.0);
         }
-
+        
         double encodervalue = encoder.get();
             // Calculations For Converting Encoder Values to Degrees (Becareful When changing the values)
             if (encodervalue > 0) {
@@ -194,6 +195,7 @@ public class Robot extends TimedRobot {
 
                 SmartDashboard.putNumber("Encoder Degrees", degree);
             }
+
     }
 
     
@@ -209,12 +211,7 @@ public class Robot extends TimedRobot {
         // Reset the autonomous timer when auto starts
 
         //autoTimer.reset();
-        startTime = Timer.getFPGATimestamp();
-
-        PortForwarder.add(5800, "photonvision.local", 5800);
-        
-
-        
+        startTime = Timer.getFPGATimestamp();    
     }
 
     @Override
@@ -297,6 +294,10 @@ public class Robot extends TimedRobot {
     //EDIT THE VALUES WITHIN THESE COMMENTS
     double degree = 0;
     //Encoder Calculations:
+    //Limelight Calculations:
+    double ideal_scoring_height = 2.21;
+    double distance_from_apriltag = 0;
+    //Limelight Calculations:
     int bentroll=-1;
     double hello = 1;
     double drive_speed=1;
