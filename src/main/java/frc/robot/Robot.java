@@ -533,6 +533,7 @@ public class Robot extends TimedRobot {
         
 
         int onshooter = 0;
+        int ben;
         if (driver.getRightTriggerAxis() > 0) {
             onshooter = 1;
             //shooter on
