@@ -101,8 +101,9 @@ public class Robot extends TimedRobot {
         NetworkTableInstance inst = NetworkTableInstance.getDefault();
         NetworkTable table = inst.getTable("Shuffleboard");
         NetworkTableEntry textEntry = table.getEntry("Text");
-        
-        textEntry.setString("ben");
+
+
+
     }
 
     @Override
@@ -285,12 +286,19 @@ public class Robot extends TimedRobot {
      */
     // bentroll is used for inverting controls (Dan)
 
+    //SET-UP FOR AUTOMATIC ARM ALIGNMENT
+
+    
+
+
     //Encoder Calculations:
     //EDIT THE VALUES WITHIN THESE COMMENTS
     double minValue = 0.15;
     double maxValue = 0.4;
     double minDegree = 0;
     double maxDegree = 90;
+    double AUTO_distance = 0;
+    double AUTO_angle = 0;
     //EDIT THE VALUES WITHIN THESE COMMENTS
     double degree = 0;
     //Encoder Calculations:
@@ -446,7 +454,6 @@ public class Robot extends TimedRobot {
 
         double otherabsXASIX = Math.abs(driver.getRightX());
         double otherabsYASIX = Math.abs(driver.getRightY());
-
 
 
         if (absYAXIS > 0.2) {
@@ -612,7 +619,31 @@ public void goTimer(int inVal){
 
     @Override
     public void testPeriodic() {
+
+        AUTO_distance = 3.09;
+
+        double adjustedDistance = AUTO_distance - 1.1;
+        double angle = 0;
+    
+        try {
+            if (adjustedDistance >= RANGE1_D1 && adjustedDistance <= RANGE1_D2) {
+                double slope = (RANGE1_A2 - RANGE1_A1) / (RANGE1_D2 - RANGE1_D1);
+                angle = RANGE1_A1 + (adjustedDistance - RANGE1_D1) * slope;
+            } else if (adjustedDistance >= RANGE2_D1 && adjustedDistance <= RANGE2_D2) {
+                double slope = (RANGE2_A2 - RANGE2_A1) / (RANGE2_D2 - RANGE2_D1);
+                angle = RANGE2_A1 + (adjustedDistance - RANGE2_D1) * slope;
+            } else {
+                throw new IllegalArgumentException("Adjusted distance out of range");
+            }
+            AUTO_angle = angle;
+            SmartDashboard.putNumber("AngleTestPeriodic", angle);
+    
+        } catch (IllegalArgumentException e) {
+            SmartDashboard.putString("AngleTestPeriodic", "Error: " + e.getMessage());
+            AUTO_angle = 0;
+        }
     }
+    
 
 
 
@@ -628,6 +659,18 @@ public void goTimer(int inVal){
            rumbling = 0;
        }).start();
    }
+
+   private static final double RANGE1_D1 = 1.0;
+   private static final double RANGE1_A1 = 29.6;
+   private static final double RANGE1_D2 = 2.0;
+   private static final double RANGE1_A2 = 39.6;
+
+   private static final double RANGE2_D1 = 0.0;
+   private static final double RANGE2_A1 = 12.6;
+   private static final double RANGE2_D2 = 0.99;
+   private static final double RANGE2_A2 = 29.6;
+
+
     private void raiseArmfor(double seconds) {
         if ((limitSwitchUpper.get()) == true) {
             leftArmMotor.set(ControlMode.PercentOutput,-0.32);
@@ -694,9 +737,6 @@ public void goTimer(int inVal){
         }).start();
 
     }
-
-    
-
 
     
     private void debounce(double seconds) {
