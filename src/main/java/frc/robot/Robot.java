@@ -1,6 +1,7 @@
 package frc.robot;
 
 import java.nio.channels.Channel;
+import java.util.Random;
 
 import javax.print.attribute.standard.MediaSize.Other;
 
@@ -61,6 +62,7 @@ public class Robot extends TimedRobot {
     private double startTime;
     private double armSpeed = 0.64;
     private final XboxController driver = new XboxController(0);
+    Random random = new Random();
     PhotonCamera camera = new PhotonCamera("photonvision");
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(7);
     private NetworkTable limelightTable;
@@ -409,6 +411,7 @@ public class Robot extends TimedRobot {
             raiseArmto(0.3);
         }
 
+        getShootingAngleandFire(random.nextDouble(3));
 
         SmartDashboard.putNumber("car", car);
         SmartDashboard.putNumber("inverted?", bentroll);
@@ -619,10 +622,11 @@ public void goTimer(int inVal){
 
     @Override
     public void testPeriodic() {
+    }
+    
+    private void getShootingAngleandFire(double dis) {
 
-        AUTO_distance = 3.09;
-
-        double adjustedDistance = AUTO_distance - 1.1;
+        double adjustedDistance = dis - 1.1;
         double angle = 0;
     
         try {
@@ -643,8 +647,6 @@ public void goTimer(int inVal){
             AUTO_angle = 0;
         }
     }
-    
-
 
 
 
