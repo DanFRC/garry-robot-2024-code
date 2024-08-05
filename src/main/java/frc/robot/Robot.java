@@ -400,18 +400,17 @@ public class Robot extends TimedRobot {
         
         //Set Drive Speed to 50%
         if(driver.getYButtonPressed()) {
-            rumbleController(0.2, 0.2);
-            drive_speed=.5;
+            getShootingAngleandFire(3.09);
         }
 
         if (driver.getPOV() == povup) {
-            AUTOraiseArmandShoot(0.165);
+            AUTOraiseArmandShoot(12.6);
         }
         if (driver.getPOV() == povdown) {
             raiseArmto(0.3);
         }
 
-        getShootingAngleandFire(random.nextDouble(3));
+        
 
         SmartDashboard.putNumber("car", car);
         SmartDashboard.putNumber("inverted?", bentroll);
