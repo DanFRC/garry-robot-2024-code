@@ -6,6 +6,7 @@ import java.util.Random;
 import javax.print.attribute.standard.MediaSize.Other;
 
 import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 //test
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -20,6 +21,7 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.simulation.DutyCycleEncoderSim;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.geometry.Transform3d;
 //import edu.wpi.first.wpilibj.interfaces.Gyro;
 //import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.net.PortForwarder;
@@ -63,7 +65,7 @@ public class Robot extends TimedRobot {
     private double armSpeed = 0.64;
     private final XboxController driver = new XboxController(0);
     Random random = new Random();
-    PhotonCamera camera = new PhotonCamera("photonvision");
+    PhotonCamera camera = new PhotonCamera("6509limelight3");
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(7);
     private NetworkTable limelightTable;
     
@@ -278,29 +280,21 @@ public class Robot extends TimedRobot {
     public void teleopInit() {
     }
 
-
-    private static void vribrate() {
-        //hello
-    }
-
     /* (non-Javadoc)
      * @see edu.wpi.first.wpilibj.IterativeRobotBase#teleopPeriodic()
      */
     // bentroll is used for inverting controls (Dan)
 
     //SET-UP FOR AUTOMATIC ARM ALIGNMENT
-
-    
-
-
+    double AUTO_distance = 0;
+    double AUTO_angle = 0;
+    double xvalue = 0;
     //Encoder Calculations:
     //EDIT THE VALUES WITHIN THESE COMMENTS
     double minValue = 0.15;
     double maxValue = 0.4;
     double minDegree = 0;
     double maxDegree = 90;
-    double AUTO_distance = 0;
-    double AUTO_angle = 0;
     //EDIT THE VALUES WITHIN THESE COMMENTS
     double degree = 0;
     //Encoder Calculations:
@@ -386,6 +380,23 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
 
+        var result = camera.getLatestResult();
+        boolean hasTargets = result.hasTargets();
+        
+        if (hasTargets) {
+        PhotonTrackedTarget target = result.getBestTarget();
+        int targetID = target.getFiducialId();
+            double poseAmbiguity = target.getPoseAmbiguity();
+            Transform3d bestCameraToTarget = target.getBestCameraToTarget();
+            Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
+            SmartDashboard.putBoolean("photon-targets", hasTargets);
+            double scale = Math.pow(10, 2);
+            double roundedgetX = Math.round(bestCameraToTarget.getX() * scale) / scale - 0.50;
+            SmartDashboard.putNumber("x", roundedgetX);
+            xvalue = roundedgetX;
+        }
+
+
         // Invert Controls when a button is pressed
         if(driver.getXButtonPressed()) {
             rumbleController(0.1, 0.4);
@@ -400,7 +411,9 @@ public class Robot extends TimedRobot {
         
         //Set Drive Speed to 50%
         if(driver.getYButtonPressed()) {
-            getShootingAngleandFire(3.09);
+            if (hasTargets) {
+                getShootingAngleandFire(xvalue);
+            }
         }
 
         if (driver.getPOV() == povup) {
@@ -532,7 +545,6 @@ public class Robot extends TimedRobot {
         
 
         int onshooter = 0;
-        int ben;
         if (driver.getRightTriggerAxis() > 0) {
             onshooter = 1;
             //shooter on
@@ -628,24 +640,20 @@ public void goTimer(int inVal){
 
         double adjustedDistance = dis - 1.1;
         double angle = 0;
-    
-        try {
-            if (adjustedDistance >= RANGE1_D1 && adjustedDistance <= RANGE1_D2) {
+
+            if (dis < 1.1) {
+                angle = 12.6;
+            }
+            else if (adjustedDistance >= RANGE1_D1 && adjustedDistance <= RANGE1_D2) {
                 double slope = (RANGE1_A2 - RANGE1_A1) / (RANGE1_D2 - RANGE1_D1);
                 angle = RANGE1_A1 + (adjustedDistance - RANGE1_D1) * slope;
             } else if (adjustedDistance >= RANGE2_D1 && adjustedDistance <= RANGE2_D2) {
                 double slope = (RANGE2_A2 - RANGE2_A1) / (RANGE2_D2 - RANGE2_D1);
                 angle = RANGE2_A1 + (adjustedDistance - RANGE2_D1) * slope;
-            } else {
-                throw new IllegalArgumentException("Adjusted distance out of range");
             }
             AUTO_angle = angle;
             SmartDashboard.putNumber("AngleTestPeriodic", angle);
-    
-        } catch (IllegalArgumentException e) {
-            SmartDashboard.putString("AngleTestPeriodic", "Error: " + e.getMessage());
-            AUTO_angle = 0;
-        }
+            AUTOraiseArmandShoot(angle);
     }
 
 
@@ -711,22 +719,11 @@ public void goTimer(int inVal){
         shooterDB = 1;
         unidegrees = degrees;
         start = 1;
-        shootNow = encoder.get() - unidegrees;
-
-        if (Math.abs(shootNow) < 0.15) {
-            waittime = 2;
-        }
-        else if (Math.abs(shootNow) < 0.3 && (Math.abs(shootNow) > 0.15)) {
-            waittime = 2;
-        }
-        else {
-            waittime = 2;
-        }
 
         shooterMotor2.set(ControlMode.PercentOutput, 1);
         shooterMotor1.set(ControlMode.PercentOutput, 1);
         new Thread(() -> {
-            Timer.delay(waittime);
+            Timer.delay(1.6);
 
             intakeMotor.set(ControlMode.PercentOutput,-1);
             new Thread(() -> {
