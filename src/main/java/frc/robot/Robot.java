@@ -188,7 +188,7 @@ public class Robot extends TimedRobot {
         if (moving == 1) {
             m_robotDrive.arcadeDrive(rb_speed, rb_turn);
         }
-        else if (moving == 0 & autoEnabled == 1) {
+        else if (moving == 0 & autoEnabled == 1 & move_db == false) {
             m_robotDrive.arcadeDrive(0.0, 0.0);
         }
         
@@ -201,7 +201,37 @@ public class Robot extends TimedRobot {
                 SmartDashboard.putNumber("Encoder Degrees", degree);
             }
 
-            //AUTO INTAKE
+            //AUTO Turning
+        if (turn_to_y0 == 1) {
+            move_db = true;
+            if (targetlocked == 1) {
+            if (yLL < -0.1) {
+                test_turning = -1;
+                m_robotDrive.arcadeDrive(0.0, -0.65);
+            }
+            else if (yLL > 0.1) {
+                m_robotDrive.arcadeDrive(0.0, 0.65);
+                test_turning = 1;
+            }
+            else if (yLL <= 0.1 && yLL >= -0.1) {
+                m_robotDrive.arcadeDrive(0.0, 0.0);
+                test_turning = 0;
+            }
+            
+            }
+            else {
+                m_robotDrive.arcadeDrive(0.0, 0.0);
+                test_turning = 0; 
+            }
+        }
+        else {
+            test_turning = 0;
+        }
+        SmartDashboard.putNumber("AutoTurning?", test_turning);
+    }
+
+    private void check4AprilTagandTurn() {
+            turn_to_y0 *= -1;
     }
 
     
@@ -286,7 +316,8 @@ public class Robot extends TimedRobot {
      */
     // bentroll is used for inverting controls (Dan)
 
-
+    //Limelight Variables
+    int targetlocked = 0;
     //AUTONOMOUS INTAKE MODE
     int intake_mode = 0;
     //AUTONOMOUS INTAKE MODE
@@ -294,6 +325,11 @@ public class Robot extends TimedRobot {
     double AUTO_distance = 0;
     double AUTO_angle = 0;
     double xvalue = 0;
+    //Negative = Disabled
+    //Positive = Enabled
+    int turn_to_y0 = -1;
+    boolean move_db = false;
+    int test_turning = 0;
     //Encoder Calculations:
     //EDIT THE VALUES WITHIN THESE COMMENTS
     double minValue = 0.15;
@@ -345,6 +381,9 @@ public class Robot extends TimedRobot {
     double test = 0.5;
     double test2 = 0.6;
     //
+    double xAxisScaled;
+    double yAxisScaled;
+    double yLL;
 
     //  ____  ____  _____ ____  _____ _____ ____  _ 
     // |  _ \|  _ \| ____/ ___|| ____|_   _/ ___|| |
@@ -386,10 +425,9 @@ public class Robot extends TimedRobot {
     public void teleopPeriodic() {
 
         var result = camera.getLatestResult();
-        boolean hasTargets = result.hasTargets();
-        SmartDashboard.putBoolean("photon-targets", hasTargets);
+        SmartDashboard.putBoolean("photon-targets", result.hasTargets());
         
-        if (hasTargets) {
+        if (result.hasTargets()) {
         PhotonTrackedTarget target = result.getBestTarget();
         int targetID = target.getFiducialId();
             double poseAmbiguity = target.getPoseAmbiguity();
@@ -398,7 +436,14 @@ public class Robot extends TimedRobot {
             double scale = Math.pow(10, 2);
             double roundedgetX = Math.round(bestCameraToTarget.getX() * scale) / scale - 0.50;
             SmartDashboard.putNumber("x", roundedgetX);
+            SmartDashboard.putNumber("y", bestCameraToTarget.getY());
             xvalue = roundedgetX;
+            yLL = bestCameraToTarget.getY();
+            targetlocked = 1;
+            SmartDashboard.putNumber("targlock", targetlocked);
+        }
+        else {
+            targetlocked = 0;
         }
 
 
@@ -416,8 +461,9 @@ public class Robot extends TimedRobot {
         
         //Set Drive Speed to 50%
         if(driver.getYButtonPressed()) {
-            if (hasTargets) {
+            if (result.hasTargets()) {
                 getShootingAngleandFire(xvalue);
+                check4AprilTagandTurn();
             }
         }
 
@@ -442,8 +488,6 @@ public class Robot extends TimedRobot {
 
         // New driving method is being used, same concept but
         // Except using getLeftX & getLeftY from the Joysticks
-        double xAxisScaled;
-        double yAxisScaled;
         // getLeftX referring to the left joysticks left-right motion, from 1 to -1
         // This if statement checks if the joystick is left (negative) or right (positive)
         // If the joystick is left (negative) (or less than zero same thing) it squares the xbox contollers value (for smooth motion)
@@ -454,17 +498,17 @@ public class Robot extends TimedRobot {
         // This is the same for driver.getLeftY, but except on the up-down axis.
 
         //Math.abs(xAxisScaled)/4
-        if (driver.getLeftX() < 0) {
+        if (driver.getLeftX() < 0 & move_db == false) {
             xAxisScaled = (driver.getLeftX()*driver.getLeftX());
         }
-        else {
+        else if (driver.getLeftX() > 0 & move_db == false){
             xAxisScaled = -1*(driver.getLeftX()*driver.getLeftX());
         }
         
         if (driver.getLeftY() < 0) {
             yAxisScaled = -drive_speed*bentroll*(driver.getLeftY()*driver.getLeftY());
         }
-        else {
+        else if (driver.getLeftY() > 0) {
             yAxisScaled = drive_speed*bentroll*(driver.getLeftY()*driver.getLeftY());
         }    
         m_robotDrive.arcadeDrive(yAxisScaled, xAxisScaled);
