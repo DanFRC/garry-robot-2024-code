@@ -201,6 +201,23 @@ public class Robot extends TimedRobot {
                 SmartDashboard.putNumber("Encoder Degrees", degree);
             }
 
+            //AUTO INTAKE
+            if (intake_mode == 1) {
+                intakeOn = 1;
+                intakeMotor.set(ControlMode.PercentOutput,-0.86);
+                if (!limitSwitchLower.get()) {
+                    leftArmMotor.set(ControlMode.PercentOutput, speed * -0.64);
+                    rightArmMotor.set(ControlMode.PercentOutput, speed * -0.64);
+                }
+                else if (limitSwitchLower.get()) {
+                    leftArmMotor.set(ControlMode.PercentOutput, speed * 0.0);
+                    rightArmMotor.set(ControlMode.PercentOutput, speed * 0.0);
+                }
+            }
+            else if (intake_mode == 0) {
+                intakeOn = 0;
+                intakeMotor.set(ControlMode.PercentOutput, 0);
+            }
     }
 
     
@@ -285,6 +302,10 @@ public class Robot extends TimedRobot {
      */
     // bentroll is used for inverting controls (Dan)
 
+
+    //AUTONOMOUS INTAKE MODE
+    int intake_mode = 0;
+    //AUTONOMOUS INTAKE MODE
     //SET-UP FOR AUTOMATIC ARM ALIGNMENT
     double AUTO_distance = 0;
     double AUTO_angle = 0;
@@ -622,6 +643,7 @@ public void goTimer(int inVal){
 
     @Override
     public void disabledPeriodic() {
+        intake_mode = 0;
     }
 
     @Override
