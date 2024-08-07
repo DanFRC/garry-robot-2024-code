@@ -202,22 +202,6 @@ public class Robot extends TimedRobot {
             }
 
             //AUTO INTAKE
-            if (intake_mode == 1) {
-                intakeOn = 1;
-                intakeMotor.set(ControlMode.PercentOutput,-0.86);
-                if (!limitSwitchLower.get()) {
-                    leftArmMotor.set(ControlMode.PercentOutput, speed * -0.64);
-                    rightArmMotor.set(ControlMode.PercentOutput, speed * -0.64);
-                }
-                else if (limitSwitchLower.get()) {
-                    leftArmMotor.set(ControlMode.PercentOutput, speed * 0.0);
-                    rightArmMotor.set(ControlMode.PercentOutput, speed * 0.0);
-                }
-            }
-            else if (intake_mode == 0) {
-                intakeOn = 0;
-                intakeMotor.set(ControlMode.PercentOutput, 0);
-            }
     }
 
     
@@ -403,6 +387,7 @@ public class Robot extends TimedRobot {
 
         var result = camera.getLatestResult();
         boolean hasTargets = result.hasTargets();
+        SmartDashboard.putBoolean("photon-targets", hasTargets);
         
         if (hasTargets) {
         PhotonTrackedTarget target = result.getBestTarget();
@@ -410,7 +395,6 @@ public class Robot extends TimedRobot {
             double poseAmbiguity = target.getPoseAmbiguity();
             Transform3d bestCameraToTarget = target.getBestCameraToTarget();
             Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
-            SmartDashboard.putBoolean("photon-targets", hasTargets);
             double scale = Math.pow(10, 2);
             double roundedgetX = Math.round(bestCameraToTarget.getX() * scale) / scale - 0.50;
             SmartDashboard.putNumber("x", roundedgetX);
@@ -693,14 +677,14 @@ public void goTimer(int inVal){
    }
 
    private static final double RANGE1_D1 = 1.0;
-   private static final double RANGE1_A1 = 29.6;
+   private static final double RANGE1_A1 = 12.6;
    private static final double RANGE1_D2 = 2.0;
-   private static final double RANGE1_A2 = 39.6;
+   private static final double RANGE1_A2 = 25.5;
 
    private static final double RANGE2_D1 = 0.0;
    private static final double RANGE2_A1 = 12.6;
    private static final double RANGE2_D2 = 0.99;
-   private static final double RANGE2_A2 = 29.6;
+   private static final double RANGE2_A2 = 25.5;
 
 
     private void raiseArmfor(double seconds) {
