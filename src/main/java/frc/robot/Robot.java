@@ -701,6 +701,10 @@ public void goTimer(int inVal){
                 double slope = (RANGE2_A2 - RANGE2_A1) / (RANGE2_D2 - RANGE2_D1);
                 angle = RANGE2_A1 + (adjustedDistance - RANGE2_D1) * slope;
             }
+            else if (adjustedDistance >= RANGE3_D1 && adjustedDistance <= RANGE3_D2) {
+                double slope = (RANGE2_A2 - RANGE2_A1) / (RANGE2_D2 - RANGE2_D1);
+                angle = RANGE2_A1 + (adjustedDistance - RANGE2_D1) * slope;
+            }
             AUTO_angle = angle;
             SmartDashboard.putNumber("AngleTestPeriodic", angle);
             AUTOraiseArmandShoot(angle);
@@ -729,6 +733,11 @@ public void goTimer(int inVal){
    private static final double RANGE2_A1 = 12.6;
    private static final double RANGE2_D2 = 0.99;
    private static final double RANGE2_A2 = 25.5;
+
+   private static final double RANGE3_D1 = 2.0;
+   private static final double RANGE3_A1 = 25.5;
+   private static final double RANGE3_D2 = 3.00;
+   private static final double RANGE3_A2 = 27.5;
 
 
     private void raiseArmfor(double seconds) {
