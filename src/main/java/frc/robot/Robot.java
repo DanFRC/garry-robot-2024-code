@@ -97,10 +97,9 @@ public class Robot extends TimedRobot {
     //    m_chooser.addOption("Go middle", goStraightAuto);
         m_chooser.addOption("Go Left", goLeftAuto);
         m_chooser.addOption("Go Right", goRightAuto);
+        m_chooser.addOption("Go Straight", goStraightAuto);
 
         SmartDashboard.putData("Auto choices", m_chooser);
-       
-        CameraServer.startAutomaticCapture("cam1",0);
 
         NetworkTableInstance inst = NetworkTableInstance.getDefault();
         NetworkTable table = inst.getTable("Shuffleboard");
@@ -207,10 +206,10 @@ public class Robot extends TimedRobot {
             if (targetlocked == 1) {
             if (yLL < -0.1) {
                 test_turning = -1;
-                m_robotDrive.arcadeDrive(0.0, -0.65);
+                m_robotDrive.arcadeDrive(0.0, -0.45);
             }
             else if (yLL > 0.1) {
-                m_robotDrive.arcadeDrive(0.0, 0.65);
+                m_robotDrive.arcadeDrive(0.0, 0.45);
                 test_turning = 1;
             }
             else if (yLL <= 0.1 && yLL >= -0.1) {
@@ -243,7 +242,6 @@ public class Robot extends TimedRobot {
         m_autoSelected = m_chooser.getSelected();
         //m_autoSelected = SmartDashboard.getString("Auto Selector",
         // kDefaultAuto);
-        System.out.println("Auto selected: " + m_autoSelected);
         // Reset the autonomous timer when auto starts
 
         //autoTimer.reset();
@@ -255,27 +253,27 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("moving?", moving);
         SmartDashboard.putNumber("speed", rb_speed);
         SmartDashboard.putNumber("speed", rb_turn);
+        SmartDashboard.putString("automode", autonomous_selected);
         double time = Timer.getFPGATimestamp();
         
       
         switch (m_autoSelected) {
         case goStraightAuto:
-
-
-            
+            autonomous_selected = "goStraightAuto";
         break;
 
 
 
         case goLeftAuto:
-            
+            autonomous_selected = "goLeftAuto";
         break;
       
         case goRightAuto:
-             
+             autonomous_selected = "goRightAuto";
         break;
 
         default:
+                    autonomous_selected = "default";
                     //Autonomous Move Forward
                     if (doOnce == 0) {
                         doOnce = 1;
@@ -315,7 +313,8 @@ public class Robot extends TimedRobot {
      * @see edu.wpi.first.wpilibj.IterativeRobotBase#teleopPeriodic()
      */
     // bentroll is used for inverting controls (Dan)
-
+    //AUTONOMOUS SELECTION VARIABLES
+    String autonomous_selected = "nil";
     //Limelight Variables
     int targetlocked = 0;
     //AUTONOMOUS INTAKE MODE
@@ -428,22 +427,24 @@ public class Robot extends TimedRobot {
         SmartDashboard.putBoolean("photon-targets", result.hasTargets());
         
         if (result.hasTargets()) {
-        PhotonTrackedTarget target = result.getBestTarget();
-        int targetID = target.getFiducialId();
-            double poseAmbiguity = target.getPoseAmbiguity();
-            Transform3d bestCameraToTarget = target.getBestCameraToTarget();
-            Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
-            double scale = Math.pow(10, 2);
-            double roundedgetX = Math.round(bestCameraToTarget.getX() * scale) / scale - 0.50;
-            SmartDashboard.putNumber("x", roundedgetX);
-            SmartDashboard.putNumber("y", bestCameraToTarget.getY());
-            xvalue = roundedgetX;
-            yLL = bestCameraToTarget.getY();
-            targetlocked = 1;
-            SmartDashboard.putNumber("targlock", targetlocked);
-        }
-        else {
-            targetlocked = 0;
+            PhotonTrackedTarget target = result.getBestTarget();
+            int targetID = target.getFiducialId();
+            if (targetID == 7 || targetID == 4) {
+                double poseAmbiguity = target.getPoseAmbiguity();
+                Transform3d bestCameraToTarget = target.getBestCameraToTarget();
+                Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
+                double scale = Math.pow(10, 2);
+                double roundedgetX = Math.round(bestCameraToTarget.getX() * scale) / scale - 0.50;
+                SmartDashboard.putNumber("x", roundedgetX);
+                SmartDashboard.putNumber("y", bestCameraToTarget.getY());
+                xvalue = roundedgetX;
+                yLL = bestCameraToTarget.getY();
+                targetlocked = 1;
+                SmartDashboard.putNumber("targlock", targetlocked);
+            }
+            else {
+                targetlocked = 0;
+            }
         }
 
 
@@ -520,25 +521,25 @@ public class Robot extends TimedRobot {
         double otherabsYASIX = Math.abs(driver.getRightY());
 
 
-        if (absYAXIS > 0.2) {
+        if (absYAXIS > 0.55) {
             driving = 1;
             rumbling = 1;
-            driver.setRumble(RumbleType.kLeftRumble, absYAXIS);
+            driver.setRumble(RumbleType.kLeftRumble, absYAXIS/6);
         }
-        else if (absXAXIS > 0.2) {
+        else if (absXAXIS > 0.55) {
             driving = 1;
             rumbling = 1;
-            driver.setRumble(RumbleType.kLeftRumble, absXAXIS);
+            driver.setRumble(RumbleType.kLeftRumble, absXAXIS/6);
         }
-        else if (otherabsXASIX > 0.07) {
+        else if (otherabsXASIX > 0.2) {
             driving = 1;
             rumbling = 1;
-            driver.setRumble(RumbleType.kLeftRumble, otherabsXASIX/4);
+            driver.setRumble(RumbleType.kLeftRumble, otherabsYASIX/8);
         }
-        else if (otherabsYASIX > 0.07) {
+        else if (otherabsYASIX > 0.2) {
             driving = 1;
             rumbling = 1;
-            driver.setRumble(RumbleType.kLeftRumble, otherabsYASIX/4);
+            driver.setRumble(RumbleType.kLeftRumble, otherabsYASIX/8);
         }
         else {
             if (driving == 1) {
@@ -620,9 +621,6 @@ public class Robot extends TimedRobot {
             SmartDashboard.putNumber("Shooter On?", onshooter);
 
         //the arm control,
-
-        //Set ben to 1 to see if the code works
-        //When you press A the arm will lift until the "limitSwitchUpper" is triggered (This is temporary, for firing presets)
         if((driver.getRawAxis(5) < -0.1) && (limitSwitchUpper.get())) {
             leftArmMotor.set(ControlMode.PercentOutput,(armSpeed*driver.getRawAxis(5)));
             rightArmMotor.set(ControlMode.PercentOutput,(armSpeed*driver.getRawAxis(5)));
@@ -691,7 +689,10 @@ public void goTimer(int inVal){
         double adjustedDistance = dis - 1.1;
         double angle = 0;
 
-            if (dis < 1.1) {
+            if (dis < 1.1 && dis > 0) {
+                angle = 12.6;
+            }
+            else if (dis == 0 || dis < 0) {
                 angle = 12.6;
             }
             else if (adjustedDistance >= RANGE1_D1 && adjustedDistance <= RANGE1_D2) {
