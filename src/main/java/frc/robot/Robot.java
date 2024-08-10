@@ -135,7 +135,7 @@ public class Robot extends TimedRobot {
         }
 
         if (upodwn == 1) {
-                if (!limitSwitchLower.get() || diff < 0) {
+                if (!limitSwitchLower.get() || diff+3 < 0) {
 
                 leftArmMotor.set(ControlMode.PercentOutput, 0.0);
                 rightArmMotor.set(ControlMode.PercentOutput, 0.0);
@@ -206,10 +206,10 @@ public class Robot extends TimedRobot {
             if (targetlocked == 1) {
             if (yLL < -0.1) {
                 test_turning = -1;
-                m_robotDrive.arcadeDrive(0.0, -0.45);
+                m_robotDrive.arcadeDrive(0.0, -0.25);
             }
             else if (yLL > 0.1) {
-                m_robotDrive.arcadeDrive(0.0, 0.45);
+                m_robotDrive.arcadeDrive(0.0, 0.25);
                 test_turning = 1;
             }
             else if (yLL <= 0.1 && yLL >= -0.1) {
@@ -430,6 +430,7 @@ public class Robot extends TimedRobot {
             PhotonTrackedTarget target = result.getBestTarget();
             int targetID = target.getFiducialId();
             if (targetID == 7 || targetID == 4) {
+                SmartDashboard.putNumber("targetID", targetID);
                 double poseAmbiguity = target.getPoseAmbiguity();
                 Transform3d bestCameraToTarget = target.getBestCameraToTarget();
                 Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
@@ -463,6 +464,12 @@ public class Robot extends TimedRobot {
         //Set Drive Speed to 50%
         if(driver.getYButtonPressed()) {
             if (result.hasTargets()) {
+                if (turn_to_y0 == 1) {
+                rumbleController(1.6, 0.5);
+                }
+                else if (turn_to_y0 == -1) {
+                rumbleController(0.3, 0.5);
+                }
                 getShootingAngleandFire(xvalue);
                 check4AprilTagandTurn();
             }
@@ -472,7 +479,8 @@ public class Robot extends TimedRobot {
             AUTOraiseArmandShoot(12.6);
         }
         if (driver.getPOV() == povdown) {
-            raiseArmto(0.3);
+            rumbleController(0.5, 0.5);
+            check4AprilTagandTurn();
         }
 
         
@@ -524,22 +532,22 @@ public class Robot extends TimedRobot {
         if (absYAXIS > 0.55) {
             driving = 1;
             rumbling = 1;
-            driver.setRumble(RumbleType.kLeftRumble, absYAXIS/6);
+            driver.setRumble(RumbleType.kLeftRumble, absYAXIS/8);
         }
         else if (absXAXIS > 0.55) {
             driving = 1;
             rumbling = 1;
-            driver.setRumble(RumbleType.kLeftRumble, absXAXIS/6);
+            driver.setRumble(RumbleType.kLeftRumble, absXAXIS/8);
         }
         else if (otherabsXASIX > 0.2) {
             driving = 1;
             rumbling = 1;
-            driver.setRumble(RumbleType.kLeftRumble, otherabsYASIX/8);
+            driver.setRumble(RumbleType.kLeftRumble, otherabsYASIX/14);
         }
         else if (otherabsYASIX > 0.2) {
             driving = 1;
             rumbling = 1;
-            driver.setRumble(RumbleType.kLeftRumble, otherabsYASIX/8);
+            driver.setRumble(RumbleType.kLeftRumble, otherabsYASIX/14);
         }
         else {
             if (driving == 1) {
