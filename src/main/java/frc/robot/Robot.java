@@ -33,7 +33,6 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.CAN;
@@ -47,7 +46,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 
 public class Robot extends TimedRobot {
-    private static final String kDefaultAuto = "Default";
+    private static final String threenoteAutonomous = "3noteauton";
     private static final String goStraightAuto = "goStraightAuto";
     private static final String goLeftAuto = "goLeftAuto";
     private static final String  goRightAuto = "goRightAuto";
@@ -93,7 +92,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotInit() {
-        m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+        m_chooser.setDefaultOption("3noteauton", threenoteAutonomous);
     //    m_chooser.addOption("Go middle", goStraightAuto);
         m_chooser.addOption("Go Left", goLeftAuto);
         m_chooser.addOption("Go Right", goRightAuto);
@@ -312,7 +311,7 @@ public class Robot extends TimedRobot {
         break;
 
         default:
-                    autonomous_selected = "default";
+                    autonomous_selected = "3noteauton";
                     //Autonomous Move Forward
                     //mov_turn 0.07 = ~90 degrees
 
@@ -343,7 +342,7 @@ public class Robot extends TimedRobot {
                             check4AprilTagandTurn();
                             Timer.delay(1.8);
                             check4AprilTagandTurn();
-                            drive_to(0.75, -0.7, 0.0);
+                            drive_to(0.775, -0.7, 0.0);
                             raiseArmto(-2);
                             Timer.delay(1);
                             intakeMotor.set(ControlMode.PercentOutput,-1);
@@ -351,7 +350,9 @@ public class Robot extends TimedRobot {
                             Timer.delay(0.8);
                             shooterMotor2.set(ControlMode.PercentOutput, -1);
                             shooterMotor1.set(ControlMode.PercentOutput, -1);
-                            Timer.delay(0.8);
+                            Timer.delay(0.4);
+                            drive_to(0.25, 0.0, 0.721);
+                            Timer.delay(0.4);
                             shooterMotor2.set(ControlMode.PercentOutput, 0);
                             shooterMotor1.set(ControlMode.PercentOutput, 0);
                             intakeMotor.set(ControlMode.PercentOutput,0.0);
@@ -646,11 +647,14 @@ public class Robot extends TimedRobot {
       //now for the flapper (wrong '20s')
       //we would use armspeed to determine how fast the flapper works
         // we will use armMotor.set() to give speed. - is in?
+        int onshooter = 0;
               
         if (driver.getRightBumper() || driver.getAButton()) {
             //intake on
             intakeOn = 1;
-            intakeMotor.set(ControlMode.PercentOutput,-1); 
+            intakeMotor.set(ControlMode.PercentOutput,-1);
+            shooterMotor1.set(ControlMode.PercentOutput, -0.5);
+            shooterMotor2.set(ControlMode.PercentOutput, -0.5);
         }
         else {
             if (driver.getLeftBumper() || driver.getLeftTriggerAxis() > 0) {
@@ -664,7 +668,7 @@ public class Robot extends TimedRobot {
                 intakeMotor.set(ControlMode.PercentOutput,driver.getLeftTriggerAxis());
                 }
             }
-            else if (shooterDB == 0) {
+            else if (shooterDB == 0 && onshooter == 0) {
                 intakeOn = 0;
                 if (intakeOn == 0) {
                     if (rumbling == 0) {
@@ -673,14 +677,15 @@ public class Robot extends TimedRobot {
                     
                 }
                 intakeMotor.set(ControlMode.PercentOutput,0.0);
+                shooterMotor2.set(ControlMode.PercentOutput, 0.0);
+                shooterMotor2.set(ControlMode.PercentOutput, 0.0);
+                
             } 
         }   
         if (intakeOn == 1) {
             driver.setRumble(RumbleType.kLeftRumble, 0.1);
         }
-        
 
-        int onshooter = 0;
         if (driver.getRightTriggerAxis() > 0) {
             onshooter = 1;
             //shooter on
@@ -694,15 +699,17 @@ public class Robot extends TimedRobot {
                 driver.setRumble(RumbleType.kBothRumble, 1.0);
             }
             
-            shooterMotor2.set(ControlMode.PercentOutput,driver.getRightTriggerAxis()); }
-        else if (shooterDB == 0) {
+            shooterMotor2.set(ControlMode.PercentOutput,driver.getRightTriggerAxis()); 
+        }
+        else if (shooterDB == 0 && intakeOn == 0) {
             onshooter = 0;
             shooterMotor1.set(ControlMode.PercentOutput,0.0);
+            shooterMotor2.set(ControlMode.PercentOutput,0.0);
             if (rumbling == 0 & intakeOn == 0) {
                 driver.setRumble(RumbleType.kLeftRumble, 0.0);
                 driver.setRumble(RumbleType.kBothRumble, 0.0);
             }
-            shooterMotor2.set(ControlMode.PercentOutput,0.0);}
+        }
 
             SmartDashboard.putNumber("Shooter On?", onshooter);
 
