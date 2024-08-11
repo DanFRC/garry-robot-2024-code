@@ -112,6 +112,72 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
 
+        var result = camera.getLatestResult();
+        SmartDashboard.putBoolean("photon-targets", result.hasTargets());
+        
+        if (result.hasTargets()) {
+            PhotonTrackedTarget target = result.getBestTarget();
+            int targetID = target.getFiducialId();
+            if (targetID == 7 || targetID == 4) {
+                SmartDashboard.putNumber("targetID", targetID);
+                double poseAmbiguity = target.getPoseAmbiguity();
+                Transform3d bestCameraToTarget = target.getBestCameraToTarget();
+                Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
+                double scale = Math.pow(10, 2);
+                double roundedgetX = Math.round(bestCameraToTarget.getX() * scale) / scale - 0.50;
+                SmartDashboard.putNumber("x", roundedgetX);
+                xvalue = roundedgetX;
+                yLL = bestCameraToTarget.getY();
+                SmartDashboard.putNumber("y", yLL);
+                targetlocked = 1;
+                SmartDashboard.putNumber("targlock", targetlocked);
+            }
+            else {
+                targetlocked = 0;
+            }
+        }
+
+        if (turn_to_y0 == 1) {
+            move_db = true;
+            if (targetlocked == 1) {
+            if (yLL < -0.06 & yLL > -0.5) {
+                test_turning = -1;
+                m_robotDrive.arcadeDrive(0.0, -0.483);
+            }
+            else if (yLL < -0.05) {
+                test_turning = -2;
+                m_robotDrive.arcadeDrive(0.0, -0.555);
+            }
+            else if (yLL > 0.06 && yLL < 0.5) {
+                m_robotDrive.arcadeDrive(0.0, 0.483);
+                test_turning = 1;
+            }
+            else if (yLL > 0.5) {
+                m_robotDrive.arcadeDrive(0.0, 0.555);
+                test_turning = 2;
+            }
+            else if (yLL <= 0.1 && yLL >= -0.1) {
+                m_robotDrive.arcadeDrive(0.0, 0.0);
+                test_turning = 0;
+            }
+            
+            }
+            else {
+                m_robotDrive.arcadeDrive(0.0, 0.755);
+                test_turning = 100;
+            }
+        }
+        else if (turn_to_y0 == -1) {
+            test_turning = 0;
+            move_db = false;
+        }
+
+            //AUTO Turning
+        SmartDashboard.putNumber("AutoTurning?", test_turning);
+        SmartDashboard.putNumber("enabledAUTOTURNING", turn_to_y0);
+        SmartDashboard.putBoolean("move_db", move_db);
+        SmartDashboard.putNumber("test_driverleftX", driver.getLeftY());
+
         if (unidegrees != 0) {
         diff = degree - unidegrees;
         }
@@ -135,7 +201,7 @@ public class Robot extends TimedRobot {
         }
 
         if (upodwn == 1) {
-                if (!limitSwitchLower.get() || diff+3 < 0) {
+                if (!limitSwitchLower.get() || diff-4.7 < 0) {
 
                 leftArmMotor.set(ControlMode.PercentOutput, 0.0);
                 rightArmMotor.set(ControlMode.PercentOutput, 0.0);
@@ -187,7 +253,7 @@ public class Robot extends TimedRobot {
         if (moving == 1) {
             m_robotDrive.arcadeDrive(rb_speed, rb_turn);
         }
-        else if (moving == 0 & autoEnabled == 1 & move_db == false) {
+        else if (moving < 1 & autoEnabled == 1 & move_db == false) {
             m_robotDrive.arcadeDrive(0.0, 0.0);
         }
         
@@ -199,34 +265,6 @@ public class Robot extends TimedRobot {
 
                 SmartDashboard.putNumber("Encoder Degrees", degree);
             }
-
-            //AUTO Turning
-        if (turn_to_y0 == 1) {
-            move_db = true;
-            if (targetlocked == 1) {
-            if (yLL < -0.1) {
-                test_turning = -1;
-                m_robotDrive.arcadeDrive(0.0, -0.25);
-            }
-            else if (yLL > 0.1) {
-                m_robotDrive.arcadeDrive(0.0, 0.25);
-                test_turning = 1;
-            }
-            else if (yLL <= 0.1 && yLL >= -0.1) {
-                m_robotDrive.arcadeDrive(0.0, 0.0);
-                test_turning = 0;
-            }
-            
-            }
-            else {
-                m_robotDrive.arcadeDrive(0.0, 0.0);
-                test_turning = 0; 
-            }
-        }
-        else {
-            test_turning = 0;
-        }
-        SmartDashboard.putNumber("AutoTurning?", test_turning);
     }
 
     private void check4AprilTagandTurn() {
@@ -266,6 +304,7 @@ public class Robot extends TimedRobot {
 
         case goLeftAuto:
             autonomous_selected = "goLeftAuto";
+            turn_to_y0 = 1;
         break;
       
         case goRightAuto:
@@ -275,12 +314,57 @@ public class Robot extends TimedRobot {
         default:
                     autonomous_selected = "default";
                     //Autonomous Move Forward
+                    //mov_turn 0.07 = ~90 degrees
+
                     if (doOnce == 0) {
                         doOnce = 1;
                         autoEnabled = 1;
                         new Thread(() ->{
                             Timer.delay(0.3);
-                            AUTOraiseArmandShoot(12.6);
+                            AUTOraiseArmandShoot(12);
+                            Timer.delay(3);
+                            intakeMotor.set(ControlMode.PercentOutput,-1);
+                            drive_to(1.2, 0.0, -0.721);
+                            raiseArmto(-2);
+                            Timer.delay(0.8);
+                            drive_to(0.25, 0.0, -0.621);
+                            shooterMotor2.set(ControlMode.PercentOutput, -1);
+                            shooterMotor1.set(ControlMode.PercentOutput, -1);
+                            Timer.delay(0.55);
+                            drive_to(0.25, 0.0, 0.721);
+                            intakeMotor.set(ControlMode.PercentOutput,0.3);
+                            Timer.delay(0.5);
+                            shooterMotor2.set(ControlMode.PercentOutput, 0.0);
+                            shooterMotor1.set(ControlMode.PercentOutput, 0.0);
+                            Timer.delay(0.1);
+                            intakeMotor.set(ControlMode.PercentOutput,0);
+                            Timer.delay(1);
+                            getShootingAngleandFire(xvalue);
+                            check4AprilTagandTurn();
+                            Timer.delay(1.8);
+                            check4AprilTagandTurn();
+                            drive_to(0.75, -0.7, 0.0);
+                            raiseArmto(-2);
+                            Timer.delay(1);
+                            intakeMotor.set(ControlMode.PercentOutput,-1);
+                            drive_to(1, 0.0, -0.721);
+                            Timer.delay(0.8);
+                            shooterMotor2.set(ControlMode.PercentOutput, -1);
+                            shooterMotor1.set(ControlMode.PercentOutput, -1);
+                            Timer.delay(0.8);
+                            shooterMotor2.set(ControlMode.PercentOutput, 0);
+                            shooterMotor1.set(ControlMode.PercentOutput, 0);
+                            intakeMotor.set(ControlMode.PercentOutput,0.0);
+                            Timer.delay(0.2);
+                            intakeMotor.set(ControlMode.PercentOutput,-0.3);
+                            drive_to(0.9, 0.65, 0.0);
+                            Timer.delay(0.5);
+                            intakeMotor.set(ControlMode.PercentOutput,0.0);
+                            tap_back();
+                            drive_to(2, 0.0, 0.655);
+                            Timer.delay(2);
+                            getShootingAngleandFire(xvalue);
+                            check4AprilTagandTurn();
                             autoEnabled = 0;
                         }).start();
                     }
@@ -304,6 +388,13 @@ public class Robot extends TimedRobot {
         }).start();
     }
 
+    private void tap_back() {
+        intakeMotor.set(ControlMode.PercentOutput,0.3);
+        new Thread(() -> {
+            Timer.delay(0.5);
+            intakeMotor.set(ControlMode.PercentOutput,0.0);
+        }).start();
+    }
 
     @Override
     public void teleopInit() {
@@ -316,7 +407,9 @@ public class Robot extends TimedRobot {
     //AUTONOMOUS SELECTION VARIABLES
     String autonomous_selected = "nil";
     //Limelight Variables
+    double auto_turning_speed = 0.25;
     int targetlocked = 0;
+    int pov_down_db = 0;
     //AUTONOMOUS INTAKE MODE
     int intake_mode = 0;
     //AUTONOMOUS INTAKE MODE
@@ -423,31 +516,6 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
 
-        var result = camera.getLatestResult();
-        SmartDashboard.putBoolean("photon-targets", result.hasTargets());
-        
-        if (result.hasTargets()) {
-            PhotonTrackedTarget target = result.getBestTarget();
-            int targetID = target.getFiducialId();
-            if (targetID == 7 || targetID == 4) {
-                SmartDashboard.putNumber("targetID", targetID);
-                double poseAmbiguity = target.getPoseAmbiguity();
-                Transform3d bestCameraToTarget = target.getBestCameraToTarget();
-                Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
-                double scale = Math.pow(10, 2);
-                double roundedgetX = Math.round(bestCameraToTarget.getX() * scale) / scale - 0.50;
-                SmartDashboard.putNumber("x", roundedgetX);
-                SmartDashboard.putNumber("y", bestCameraToTarget.getY());
-                xvalue = roundedgetX;
-                yLL = bestCameraToTarget.getY();
-                targetlocked = 1;
-                SmartDashboard.putNumber("targlock", targetlocked);
-            }
-            else {
-                targetlocked = 0;
-            }
-        }
-
 
         // Invert Controls when a button is pressed
         if(driver.getXButtonPressed()) {
@@ -463,7 +531,7 @@ public class Robot extends TimedRobot {
         
         //Set Drive Speed to 50%
         if(driver.getYButtonPressed()) {
-            if (result.hasTargets()) {
+            if (targetlocked == 1) {
                 if (turn_to_y0 == 1) {
                 rumbleController(1.6, 0.5);
                 }
@@ -479,8 +547,16 @@ public class Robot extends TimedRobot {
             AUTOraiseArmandShoot(12.6);
         }
         if (driver.getPOV() == povdown) {
-            rumbleController(0.5, 0.5);
-            check4AprilTagandTurn();
+            if (pov_down_db == 0) {
+                pov_down_db = 1;
+                rumbleController(0.5, 0.5);
+                check4AprilTagandTurn();
+        new Thread(() -> {
+            Timer.delay(0.3);
+            pov_down_db = 0;
+        }).start();
+
+            }
         }
 
         
@@ -519,8 +595,10 @@ public class Robot extends TimedRobot {
         }
         else if (driver.getLeftY() > 0) {
             yAxisScaled = drive_speed*bentroll*(driver.getLeftY()*driver.getLeftY());
-        }    
+        }
+        if (move_db == false) {
         m_robotDrive.arcadeDrive(yAxisScaled, xAxisScaled);
+        }
 
         double absXAXIS = Math.abs(xAxisScaled);
         double absYAXIS = Math.abs(yAxisScaled);
@@ -694,7 +772,7 @@ public void goTimer(int inVal){
     
     private void getShootingAngleandFire(double dis) {
 
-        double adjustedDistance = dis - 1.1;
+        double adjustedDistance = dis;
         double angle = 0;
 
             if (dis < 1.1 && dis > 0) {
@@ -748,12 +826,12 @@ public void goTimer(int inVal){
    private static final double RANGE2_A2 = 25.5;
 
    private static final double RANGE3_D1 = 2.0;
-   private static final double RANGE3_A1 = 25.5;
-   private static final double RANGE3_D2 = 3.00;
-   private static final double RANGE3_A2 = 27.5;
+   private static final double RANGE3_A1 = 22.5;
+   private static final double RANGE3_D2 = 3.0;
+   private static final double RANGE3_A2 = 28;
 
    private static final double RANGE4_D1 = 3.0;
-   private static final double RANGE4_A1 = 27.5;
+   private static final double RANGE4_A1 = 28;
    private static final double RANGE4_D2 = 3.5;
    private static final double RANGE4_A2 = 30.5;
 
@@ -812,15 +890,5 @@ public void goTimer(int inVal){
             }).start();
         }).start();
 
-    }
-
-    
-    private void debounce(double seconds) {
-        db = 1;
-
-       new Thread(() -> {
-            Timer.delay(seconds);
-            db = 0;
-       }).start();
     }
 }
