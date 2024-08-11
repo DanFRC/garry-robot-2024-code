@@ -338,7 +338,7 @@ public class Robot extends TimedRobot {
                             shooterMotor1.set(ControlMode.PercentOutput, 0.0);
                             Timer.delay(0.1);
                             intakeMotor.set(ControlMode.PercentOutput,0);
-                            Timer.delay(1);
+                            //Timer.delay(1);
                             getShootingAngleandFire(xvalue);
                             check4AprilTagandTurn();
                             Timer.delay(1.8);
