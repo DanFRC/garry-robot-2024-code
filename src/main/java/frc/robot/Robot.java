@@ -183,12 +183,20 @@ public class Robot extends TimedRobot {
         }
 
         
-        if (start == 1 & diff > 0 & upodwn == 0) {
+        if (start == 1 & diff >= 10 & upodwn == 0) {
             upodwn = 1;
             dir = -1;
-        } else if (start == 1 & diff < 0 & upodwn == 0) {
+        } else if (start == 1 & diff > 0 & diff < 10 & upodwn == 0) {
+            upodwn = -1;
+            dir = 0.2;
+        }
+        else if (start == 1 & diff < 10 & upodwn == 0) {
             upodwn = -1;
             dir = 1;
+        }
+        else if (start == 1 & diff < 0 & diff > -10 & upodwn == 0) {
+            upodwn = -1;
+            dir = -0.2;
         }
         
         differenceval = Math.abs(diff);
@@ -454,7 +462,7 @@ public class Robot extends TimedRobot {
     int stop = 1;
     int start = 0;
     int arming = 1;
-    int dir = 0;
+    double dir = 0;
     int upodwn = 0;
     int doOnce = 0;
     double shootNow = 0;
@@ -791,7 +799,7 @@ public void goTimer(int inVal){
             raiseArmDB = 1;
             raiseArmto(const_updated_angle);
             new Thread(() -> {
-                Timer.delay(1);
+                Timer.delay(0.1);
                 raiseArmto(const_updated_angle);
             }).start();
         }
