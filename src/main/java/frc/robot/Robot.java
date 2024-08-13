@@ -417,7 +417,9 @@ public class Robot extends TimedRobot {
     //SET-UP FOR AUTOMATIC ARM ALIGNMENT
     double AUTO_distance = 0;
     double AUTO_angle = 0;
+    double const_updated_angle = 0;
     double xvalue = 0;
+    int raiseArmDB = 0;
     //Negative = Disabled
     //Positive = Enabled
     int turn_to_y0 = -1;
@@ -477,6 +479,7 @@ public class Robot extends TimedRobot {
     double xAxisScaled;
     double yAxisScaled;
     double yLL;
+    int yButtonDb = 0;
 
     //  ____  ____  _____ ____  _____ _____ ____  _ 
     // |  _ \|  _ \| ____/ ___|| ____|_   _/ ___|| |
@@ -516,7 +519,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-
+        getShootingAngleifAprilTag();
 
         // Invert Controls when a button is pressed
         if(driver.getXButtonPressed()) {
@@ -532,6 +535,7 @@ public class Robot extends TimedRobot {
         
         //Set Drive Speed to 50%
         if(driver.getYButtonPressed()) {
+            if (yButtonDb == 0) {
             if (targetlocked == 1) {
                 if (turn_to_y0 == 1) {
                 rumbleController(1.6, 0.5);
@@ -539,11 +543,18 @@ public class Robot extends TimedRobot {
                 else if (turn_to_y0 == -1) {
                 rumbleController(0.3, 0.5);
                 }
+                yButtonDb = 1;
                 getShootingAngleandFire(xvalue);
                 check4AprilTagandTurn();
+                new Thread(() -> {
+                    Timer.delay(1);
+                    check4AprilTagandTurn();
+                    yButtonDb = 0;
+                }).start();
+                
             }
         }
-
+    }
         if (driver.getPOV() == povup) {
             AUTOraiseArmandShoot(12.6);
         }
@@ -758,6 +769,7 @@ public void goTimer(int inVal){
 
     @Override
     public void disabledInit() {
+        turn_to_y0 = -1;
     }
 
     @Override
@@ -770,22 +782,66 @@ public void goTimer(int inVal){
     }
 
 
-
-
-
     @Override
     public void testPeriodic() {
-    }
-    
-    private void getShootingAngleandFire(double dis) {
+        getShootingAngleifAprilTag();
+        check4AprilTagandTurn();
+        if (raiseArmDB == 0) {
+            raiseArmDB = 1;
+            raiseArmto(const_updated_angle);
+            new Thread(() -> {
+                Timer.delay(1);
+                raiseArmto(const_updated_angle);
+            }).start();
+        }
+        
 
-        double adjustedDistance = dis;
+        
+    }
+
+
+
+
+    
+    private void getShootingAngleifAprilTag() {
+
+        double adjustedDistance = xvalue;
         double angle = 0;
 
-            if (dis < 1.1 && dis > 0) {
+            if (xvalue < 1.1 && xvalue > 0) {
                 angle = 12.6;
             }
-            else if (dis == 0 || dis < 0) {
+            else if (xvalue == 0 || xvalue < 0) {
+                angle = 12.6;
+            }
+            else if (adjustedDistance >= RANGE1_D1 && adjustedDistance <= RANGE1_D2) {
+                double slope = (RANGE1_A2 - RANGE1_A1) / (RANGE1_D2 - RANGE1_D1);
+                angle = RANGE1_A1 + (adjustedDistance - RANGE1_D1) * slope;
+            } else if (adjustedDistance >= RANGE2_D1 && adjustedDistance <= RANGE2_D2) {
+                double slope = (RANGE2_A2 - RANGE2_A1) / (RANGE2_D2 - RANGE2_D1);
+                angle = RANGE2_A1 + (adjustedDistance - RANGE2_D1) * slope;
+            }
+            else if (adjustedDistance >= RANGE3_D1 && adjustedDistance <= RANGE3_D2) {
+                double slope = (RANGE3_A2 - RANGE3_A1) / (RANGE3_D2 - RANGE3_D1);
+                angle = RANGE3_A1 + (adjustedDistance - RANGE3_D1) * slope;
+            }
+            else if (adjustedDistance >= RANGE4_D1 && adjustedDistance <= RANGE4_D2) {
+                double slope = (RANGE4_A2 - RANGE4_A1) / (RANGE4_D2 - RANGE4_D1);
+                angle = RANGE4_A1 + (adjustedDistance - RANGE4_D1) * slope;
+            }
+            const_updated_angle = angle;
+            SmartDashboard.putNumber("ShootingAngleOnCall", angle);
+    }
+
+    private void getShootingAngleandFire(double dis) {
+
+        double adjustedDistance = xvalue;
+        double angle = 0;
+
+            if (xvalue < 1.1 && xvalue > 0) {
+                angle = 12.6;
+            }
+            else if (xvalue == 0 || xvalue < 0) {
                 angle = 12.6;
             }
             else if (adjustedDistance >= RANGE1_D1 && adjustedDistance <= RANGE1_D2) {
@@ -805,7 +861,6 @@ public void goTimer(int inVal){
             }
             AUTO_angle = angle;
             SmartDashboard.putNumber("AngleTestPeriodic", angle);
-            AUTOraiseArmandShoot(angle);
     }
 
 
@@ -841,34 +896,6 @@ public void goTimer(int inVal){
    private static final double RANGE4_A1 = 28;
    private static final double RANGE4_D2 = 3.5;
    private static final double RANGE4_A2 = 30.5;
-
-
-    private void raiseArmfor(double seconds) {
-        if ((limitSwitchUpper.get()) == true) {
-            leftArmMotor.set(ControlMode.PercentOutput,-0.32);
-            rightArmMotor.set(ControlMode.PercentOutput,-0.32);
-            driver.setRumble(RumbleType.kLeftRumble, 0.05);
-            raising = 1;
-            rumbling = 1;
-        }
-        else {
-            leftArmMotor.set(ControlMode.PercentOutput,0.0);
-            rightArmMotor.set(ControlMode.PercentOutput,0.0);
-            driver.setRumble(RumbleType.kLeftRumble, 0.0);
-            raising = 0;
-            rumbling = 0;
-        }
-
-       new Thread(() -> {
-            Timer.delay(seconds);
-            leftArmMotor.set(ControlMode.PercentOutput,0.0);
-            rightArmMotor.set(ControlMode.PercentOutput,0.0);
-            driver.setRumble(RumbleType.kLeftRumble, 0.0);
-            raising = 0;
-            rumbling = 0;
-       }).start();
-    }
-
 
     private void raiseArmto(double degrees) {
         unidegrees = degrees;
