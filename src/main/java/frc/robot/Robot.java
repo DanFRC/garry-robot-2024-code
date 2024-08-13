@@ -145,14 +145,14 @@ public class Robot extends TimedRobot {
             }
             else if (yLL < -0.05) {
                 test_turning = -2;
-                m_robotDrive.arcadeDrive(0.0, -0.555);
+                m_robotDrive.arcadeDrive(0.0, -0.655);
             }
             else if (yLL > 0.06 && yLL < 0.5) {
                 m_robotDrive.arcadeDrive(0.0, 0.483);
                 test_turning = 1;
             }
             else if (yLL > 0.5) {
-                m_robotDrive.arcadeDrive(0.0, 0.555);
+                m_robotDrive.arcadeDrive(0.0, 0.655);
                 test_turning = 2;
             }
             else if (yLL <= 0.1 && yLL >= -0.1) {
@@ -796,7 +796,7 @@ public void goTimer(int inVal){
         }
         
 
-        
+
     }
 
 
