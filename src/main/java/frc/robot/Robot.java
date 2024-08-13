@@ -111,6 +111,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
 
+        //While Robot Enabled in any state, constantly get Limelight Data
         var result = camera.getLatestResult();
         SmartDashboard.putBoolean("photon-targets", result.hasTargets());
         
