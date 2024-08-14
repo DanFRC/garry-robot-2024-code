@@ -883,6 +883,7 @@ public void goTimer(int inVal){
        }).start();
    }
 
+   //stuffs
    private static final double RANGE1_D1 = 1.0;
    private static final double RANGE1_A1 = 12.6;
    private static final double RANGE1_D2 = 2.0;
