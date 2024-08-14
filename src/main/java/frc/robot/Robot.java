@@ -146,14 +146,14 @@ public class Robot extends TimedRobot {
             }
             else if (yLL < -0.05) {
                 test_turning = -2;
-                m_robotDrive.arcadeDrive(0.0, -0.655);
+                m_robotDrive.arcadeDrive(0.0, -0.555);
             }
             else if (yLL > 0.06 && yLL < 0.5) {
                 m_robotDrive.arcadeDrive(0.0, 0.483);
                 test_turning = 1;
             }
             else if (yLL > 0.5) {
-                m_robotDrive.arcadeDrive(0.0, 0.655);
+                m_robotDrive.arcadeDrive(0.0, 0.555);
                 test_turning = 2;
             }
             else if (yLL <= 0.1 && yLL >= -0.1) {
@@ -544,25 +544,28 @@ public class Robot extends TimedRobot {
         
         //Set Drive Speed to 50%
         if(driver.getYButtonPressed()) {
-            if (yButtonDb == 0) {
-            if (targetlocked == 1) {
+            //if (yButtonDb == 0) {
+            //if (targetlocked == 1) {
                 if (turn_to_y0 == 1) {
                 rumbleController(1.6, 0.5);
                 }
                 else if (turn_to_y0 == -1) {
                 rumbleController(0.3, 0.5);
                 }
-                yButtonDb = 1;
+                //yButtonDb = 1;
                 getShootingAngleandFire(xvalue);
-                check4AprilTagandTurn();
+                if (xvalue < 3) {
+                    check4AprilTagandTurn();
                 new Thread(() -> {
                     Timer.delay(1);
                     check4AprilTagandTurn();
-                    yButtonDb = 0;
+                    //yButtonDb = 0;
                 }).start();
+                }
+
                 
-            }
-        }
+            //}
+        //}
     }
         if (driver.getPOV() == povup) {
             AUTOraiseArmandShoot(12.6);
@@ -578,6 +581,9 @@ public class Robot extends TimedRobot {
         }).start();
 
             }
+        }
+        if (driver.getPOV() == povleft) {
+            raiseArmto(51.6);
         }
 
         
@@ -788,24 +794,14 @@ public void goTimer(int inVal){
 
     @Override
     public void testInit() {
+        check4AprilTagandTurn();
     }
 
 
     @Override
     public void testPeriodic() {
         getShootingAngleifAprilTag();
-        check4AprilTagandTurn();
-        if (raiseArmDB == 0) {
-            raiseArmDB = 1;
-            raiseArmto(const_updated_angle);
-            new Thread(() -> {
-                Timer.delay(0.1);
-                raiseArmto(const_updated_angle);
-            }).start();
-        }
-        
-
-
+        raiseArmto(const_updated_angle);
     }
 
 
@@ -870,6 +866,7 @@ public void goTimer(int inVal){
             }
             AUTO_angle = angle;
             SmartDashboard.putNumber("AngleTestPeriodic", angle);
+            AUTOraiseArmandShoot(AUTO_angle);
     }
 
 
@@ -889,20 +886,20 @@ public void goTimer(int inVal){
    private static final double RANGE1_D1 = 1.0;
    private static final double RANGE1_A1 = 12.6;
    private static final double RANGE1_D2 = 2.0;
-   private static final double RANGE1_A2 = 25.5;
+   private static final double RANGE1_A2 = 22.5;
 
    private static final double RANGE2_D1 = 0.0;
    private static final double RANGE2_A1 = 12.6;
    private static final double RANGE2_D2 = 0.99;
-   private static final double RANGE2_A2 = 25.5;
+   private static final double RANGE2_A2 = 12.6;
 
    private static final double RANGE3_D1 = 2.0;
    private static final double RANGE3_A1 = 22.5;
    private static final double RANGE3_D2 = 3.0;
-   private static final double RANGE3_A2 = 28;
+   private static final double RANGE3_A2 = 28.5;
 
    private static final double RANGE4_D1 = 3.0;
-   private static final double RANGE4_A1 = 28;
+   private static final double RANGE4_A1 = 28.5;
    private static final double RANGE4_D2 = 3.5;
    private static final double RANGE4_A2 = 30.5;
 
@@ -922,10 +919,12 @@ public void goTimer(int inVal){
         shooterMotor1.set(ControlMode.PercentOutput, 1);
         new Thread(() -> {
             Timer.delay(1.6);
-
+            raiseArmto(AUTO_angle);
             intakeMotor.set(ControlMode.PercentOutput,-1);
+            Timer.delay(0.3);
+            raiseArmto(-2);
             new Thread(() -> {
-                Timer.delay(1);
+                Timer.delay(0.7);
                 intakeMotor.set(ControlMode.PercentOutput,0.0);
                 shooterMotor2.set(ControlMode.PercentOutput, 0.0);
                 shooterMotor1.set(ControlMode.PercentOutput, 0.0);
