@@ -555,7 +555,12 @@ public class Robot extends TimedRobot {
         //Set Drive Speed to 100%
         if(driver.getBButtonPressed()) {
             rumbleController(0.4, 0.2);
-            drive_speed=0.91;
+            if (drive_speed == 1) {
+                drive_speed=0.91;
+            }
+            else if (drive_speed == 0.91) {
+                drive_speed = 1;
+            }
         }
         
         //Set Drive Speed to 50%
