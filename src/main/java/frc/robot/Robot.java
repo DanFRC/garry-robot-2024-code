@@ -34,6 +34,8 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.CAN;
 
@@ -63,6 +65,8 @@ public class Robot extends TimedRobot {
     private double startTime;
     private double armSpeed = 0.64;
     private final XboxController driver = new XboxController(0);
+    private final Joystick joystick = new Joystick(1);
+    private final Servo servo = new Servo(9);
     Random random = new Random();
     PhotonCamera camera = new PhotonCamera("6509limelight3");
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(7);
@@ -329,8 +333,10 @@ public class Robot extends TimedRobot {
                         autoEnabled = 1;
                         new Thread(() ->{
                             Timer.delay(0.3);
-                            AUTOraiseArmandShoot(12);
+                            AUTOraiseArmandShoot(9);
                             Timer.delay(3);
+                            raiseArmto(18);
+                            Timer.delay(0.8);
                             intakeMotor.set(ControlMode.PercentOutput,-1);
                             drive_to(1.2, 0.0, -0.721);
                             raiseArmto(-2);
@@ -348,33 +354,34 @@ public class Robot extends TimedRobot {
                             intakeMotor.set(ControlMode.PercentOutput,0);
                             //Timer.delay(1);
                             getShootingAngleandFire(xvalue);
-                            check4AprilTagandTurn();
+                            turn_to_y0 = 1;
                             Timer.delay(1.8);
-                            check4AprilTagandTurn();
-                            drive_to(0.775, -0.7, 0.0);
+                            turn_to_y0 = -1;
+                            drive_to(1, 0.7, 0.0);
                             raiseArmto(-2);
-                            Timer.delay(1);
+                            Timer.delay(1.18);
                             intakeMotor.set(ControlMode.PercentOutput,-1);
-                            drive_to(1, 0.0, -0.721);
-                            Timer.delay(0.8);
+                            drive_to(1.12, 0.0, -0.721);
+                            Timer.delay(0.4);
                             shooterMotor2.set(ControlMode.PercentOutput, -1);
                             shooterMotor1.set(ControlMode.PercentOutput, -1);
-                            Timer.delay(0.4);
-                            drive_to(0.25, 0.0, 0.721);
-                            Timer.delay(0.4);
+                            Timer.delay(.9);
+                            drive_to(0.7, 0.0, 0.721);
+                            Timer.delay(0.5);
                             shooterMotor2.set(ControlMode.PercentOutput, 0);
                             shooterMotor1.set(ControlMode.PercentOutput, 0);
                             intakeMotor.set(ControlMode.PercentOutput,0.0);
-                            Timer.delay(0.2);
+                            Timer.delay(0.3);
                             intakeMotor.set(ControlMode.PercentOutput,-0.3);
-                            drive_to(0.9, 0.65, 0.0);
+                            drive_to(0.7, -0.7, 0.0);
                             Timer.delay(0.5);
                             intakeMotor.set(ControlMode.PercentOutput,0.0);
+                            Timer.delay(0.34);
                             tap_back();
-                            drive_to(2, 0.0, 0.655);
-                            Timer.delay(2);
+                            drive_to(0.2, 0.0, 0.655);
+                            Timer.delay(.3);
                             getShootingAngleandFire(xvalue);
-                            check4AprilTagandTurn();
+                            turn_to_y0 = 1;
                             autoEnabled = 0;
                         }).start();
                     }
@@ -414,6 +421,8 @@ public class Robot extends TimedRobot {
      * @see edu.wpi.first.wpilibj.IterativeRobotBase#teleopPeriodic()
      */
     // bentroll is used for inverting controls (Dan)
+    //Joystick
+    boolean joystickEnabled = false;
     //AUTONOMOUS SELECTION VARIABLES
     String autonomous_selected = "nil";
     //Limelight Variables
@@ -449,7 +458,7 @@ public class Robot extends TimedRobot {
     //Limelight Calculations:
     int bentroll=-1;
     double hello = 1;
-    double drive_speed=1;
+    double drive_speed=0.91;
     int car=0;
     int pov = -1;
     int rumbling = 0;
@@ -487,8 +496,15 @@ public class Robot extends TimedRobot {
     //
     double xAxisScaled;
     double yAxisScaled;
+    double xJoystickScaled;
+    double yJoystickScaled;
+    double JoysticktiltScaled;
     double yLL;
     int yButtonDb = 0;
+
+    //for Joystick
+    boolean TriggerDown = false;
+    int servoDB = -1;
 
     //  ____  ____  _____ ____  _____ _____ ____  _ 
     // |  _ \|  _ \| ____/ ___|| ____|_   _/ ___|| |
@@ -539,7 +555,7 @@ public class Robot extends TimedRobot {
         //Set Drive Speed to 100%
         if(driver.getBButtonPressed()) {
             rumbleController(0.4, 0.2);
-            drive_speed=1;
+            drive_speed=0.91;
         }
         
         //Set Drive Speed to 50%
@@ -586,15 +602,17 @@ public class Robot extends TimedRobot {
             raiseArmto(51.6);
         }
 
-        
+        if (servoDB == 1) {
+            servo.setSpeed(-2);
+        }
+        if (servoDB == -1) {
+            servo.setSpeed(2);
+        }
 
-        SmartDashboard.putNumber("car", car);
-        SmartDashboard.putNumber("inverted?", bentroll);
-        SmartDashboard.putNumber("drive_speed", drive_speed);
-        SmartDashboard.putNumber("rumbling?", rumbling);
-        SmartDashboard.putNumber("encoder", encoder.get());
-        SmartDashboard.putNumber("What is diff?", diff);
-        SmartDashboard.putNumber("upodwn", upodwn);
+        if (driver.getStartButtonPressed() || joystick.getRawButtonPressed(4)) {
+            servoDB *= -1;
+        }
+        SmartDashboard.putNumber("Driving Orientation", bentroll);
         SmartDashboard.putBoolean("limitswitchlower", limitSwitchLower.get());
 
 
@@ -608,8 +626,20 @@ public class Robot extends TimedRobot {
         // doesn't matter if you move the joystick left or right, you will always go one direction.
         // So if the joystick is right, it will multiply the value by -1 to make the robot move the other direction.
         // This is the same for driver.getLeftY, but except on the up-down axis.
-
         //Math.abs(xAxisScaled)/4
+        if (joystick.getThrottle() == -1) {
+            xJoystickScaled = -(joystick.getX());
+            yJoystickScaled = -(joystick.getY());
+            if (joystick.getTwist() > 0) {
+                JoysticktiltScaled = -(joystick.getTwist()*joystick.getTwist());
+            }
+            else if (joystick.getTwist() < 0) {
+                JoysticktiltScaled = (joystick.getTwist()*joystick.getTwist());
+            }
+            else if (joystick.getTwist() == 0) {
+                JoysticktiltScaled = 0;
+            }
+        }
         if (driver.getLeftX() < 0 & move_db == false) {
             xAxisScaled = (driver.getLeftX()*driver.getLeftX());
         }
@@ -623,8 +653,13 @@ public class Robot extends TimedRobot {
         else if (driver.getLeftY() > 0) {
             yAxisScaled = drive_speed*bentroll*(driver.getLeftY()*driver.getLeftY());
         }
-        if (move_db == false) {
+        if (move_db == false & joystick.getThrottle() != -1) {
         m_robotDrive.arcadeDrive(yAxisScaled, xAxisScaled);
+        joystickEnabled = false;
+        }
+        else if (move_db == false & joystick.getThrottle() == -1) {
+            m_robotDrive.arcadeDrive(yJoystickScaled, xJoystickScaled);
+            joystickEnabled = true;
         }
 
         double absXAXIS = Math.abs(xAxisScaled);
@@ -661,13 +696,11 @@ public class Robot extends TimedRobot {
             driving = 0;
         }
 
-
-        SmartDashboard.putNumber("xAxisDriver", xAxisScaled);
-        SmartDashboard.putNumber("yAxisDriver", yAxisScaled);
-        SmartDashboard.putNumber("RMB", driver.getRightTriggerAxis());
-        SmartDashboard.putNumber("Intake ON?", intakeOn);
-        SmartDashboard.putNumber("raising", raising);
         SmartDashboard.putBoolean("limitswitchUp", limitSwitchUpper.get());
+        SmartDashboard.putNumber("axis", joystick.getThrottle());
+        SmartDashboard.putBoolean("joystick Enabled?", joystickEnabled);
+        SmartDashboard.putBoolean("IntakeButton", joystick.getRawButton(3));
+        SmartDashboard.putNumber("POV JOY", joystick.getPOV());
      // try this instead, squared inputs may smooth the controls somewhat
      //   m_robotDrive.arcadeDrive(driver.getRawAxis(0)*driver.getRawAxis(0),driver.getRawAxis(1)*driver.getRawAxis(1));
       //now for the flapper (wrong '20s')
@@ -675,12 +708,12 @@ public class Robot extends TimedRobot {
         // we will use armMotor.set() to give speed. - is in?
         int onshooter = 0;
               
-        if (driver.getRightBumper() || driver.getAButton()) {
+        if (driver.getRightBumper() || driver.getAButton() || joystick.getRawButton(2)) {
             //intake on
             intakeOn = 1;
             intakeMotor.set(ControlMode.PercentOutput,-1);
-            shooterMotor1.set(ControlMode.PercentOutput, -0.5);
-            shooterMotor2.set(ControlMode.PercentOutput, -0.5);
+            shooterMotor1.set(ControlMode.PercentOutput, -1);
+            shooterMotor2.set(ControlMode.PercentOutput, -1);
         }
         else {
             if (driver.getLeftBumper() || driver.getLeftTriggerAxis() > 0) {
@@ -737,16 +770,21 @@ public class Robot extends TimedRobot {
             }
         }
 
-            SmartDashboard.putNumber("Shooter On?", onshooter);
 
         //the arm control,
-        if((driver.getRawAxis(5) < -0.1) && (limitSwitchUpper.get())) {
-            leftArmMotor.set(ControlMode.PercentOutput,(armSpeed*driver.getRawAxis(5)));
-            rightArmMotor.set(ControlMode.PercentOutput,(armSpeed*driver.getRawAxis(5)));
+        if((joystick.getPOV() == 0) && (limitSwitchUpper.get())|| (driver.getRawAxis(5) < -0.1) && (limitSwitchUpper.get())) {
+            if (joystick.getThrottle() != -1) {
+            leftArmMotor.set(ControlMode.PercentOutput,driver.getRawAxis(5));
+            rightArmMotor.set(ControlMode.PercentOutput,driver.getRawAxis(5));
+            }
+            else {
+            leftArmMotor.set(ControlMode.PercentOutput,-0.64);
+            rightArmMotor.set(ControlMode.PercentOutput,-0.64);
+            }
         } else {
-            if((driver.getRawAxis(5) > 0.1) && (limitSwitchLower.get())) {
-                leftArmMotor.set(ControlMode.PercentOutput,(armSpeed*driver.getRawAxis(5)));
-                rightArmMotor.set(ControlMode.PercentOutput,(armSpeed*driver.getRawAxis(5)));
+            if((joystick.getPOV() == 180 && limitSwitchLower.get()) ||(driver.getRawAxis(5) > 0.1) && (limitSwitchLower.get())) {
+                leftArmMotor.set(ControlMode.PercentOutput,0.64);
+                rightArmMotor.set(ControlMode.PercentOutput,0.64);
             }
             else if (raising == 0){
                 leftArmMotor.set(ControlMode.PercentOutput,0.0);
@@ -835,7 +873,7 @@ public void goTimer(int inVal){
                 angle = RANGE4_A1 + (adjustedDistance - RANGE4_D1) * slope;
             }
             const_updated_angle = angle;
-            SmartDashboard.putNumber("ShootingAngleOnCall", angle);
+            SmartDashboard.putNumber("Shoot Angle", angle);
     }
 
     private void getShootingAngleandFire(double dis) {
@@ -865,7 +903,7 @@ public void goTimer(int inVal){
                 angle = RANGE4_A1 + (adjustedDistance - RANGE4_D1) * slope;
             }
             AUTO_angle = angle;
-            SmartDashboard.putNumber("AngleTestPeriodic", angle);
+            SmartDashboard.putNumber("Fired Angle", angle);
             AUTOraiseArmandShoot(AUTO_angle);
     }
 
