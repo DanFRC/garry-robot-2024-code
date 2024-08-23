@@ -67,6 +67,7 @@ public class Robot extends TimedRobot {
     private final XboxController driver = new XboxController(0);
     private final Joystick joystick = new Joystick(1);
     private final Servo servo = new Servo(9);
+    private final AnalogGyro gyro = new AnalogGyro(2);
     Random random = new Random();
     PhotonCamera camera = new PhotonCamera("6509limelight3");
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(7);
@@ -415,6 +416,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
+        turn_to_y0 = -1;
     }
 
     /* (non-Javadoc)
@@ -589,7 +591,7 @@ public class Robot extends TimedRobot {
         //}
     }
         if (driver.getPOV() == povup) {
-            AUTOraiseArmandShoot(12.6);
+            raiseArmto(51.6);
         }
         if (driver.getPOV() == povdown) {
             if (pov_down_db == 0) {
