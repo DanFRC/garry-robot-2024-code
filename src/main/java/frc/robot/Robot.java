@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.simulation.DutyCycleEncoderSim;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.I2C;
 //import edu.wpi.first.wpilibj.interfaces.Gyro;
 //import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.net.PortForwarder;
@@ -30,13 +31,15 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.wpilibj.AnalogGyro;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.CAN;
 
 import edu.wpi.first.networktables.NetworkTable;
@@ -67,12 +70,16 @@ public class Robot extends TimedRobot {
     private final XboxController driver = new XboxController(0);
     private final Joystick joystick = new Joystick(1);
     private final Servo servo = new Servo(9);
-    private final AnalogGyro gyro = new AnalogGyro(2);
     Random random = new Random();
+
+    I2C digitalgyro = new I2C(Port.kOnboard, 0);
+    Byte[] gyroIn = new Byte[3];
+
     PhotonCamera camera = new PhotonCamera("6509limelight3");
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(7);
     private NetworkTable limelightTable;
-    
+
+
     // create the VictorSPX motor controllers and assign their ports
     private final DigitalInput limitSwitchUpper = new DigitalInput(8);
     private final DigitalInput limitSwitchLower = new DigitalInput(9);
