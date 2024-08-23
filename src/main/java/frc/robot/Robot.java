@@ -168,7 +168,7 @@ public class Robot extends TimedRobot {
             
             }
             else {
-                m_robotDrive.arcadeDrive(0.0, 0.755);
+                m_robotDrive.arcadeDrive(0.0, 0.0);
                 test_turning = 100;
             }
         }
