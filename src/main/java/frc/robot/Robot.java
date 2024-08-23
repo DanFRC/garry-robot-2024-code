@@ -648,17 +648,17 @@ public class Robot extends TimedRobot {
             }
         }
         if (driver.getLeftX() < 0 & move_db == false) {
-            xAxisScaled = (driver.getLeftX()*driver.getLeftX());
+            xAxisScaled = (Math.pow(driver.getLeftX(),1.6));
         }
         else if (driver.getLeftX() > 0 & move_db == false){
-            xAxisScaled = -1*(driver.getLeftX()*driver.getLeftX());
+            xAxisScaled = -1*(Math.pow(driver.getLeftX(),1.6));
         }
         
         if (driver.getLeftY() < 0) {
-            yAxisScaled = -drive_speed*bentroll*(driver.getLeftY()*driver.getLeftY());
+            yAxisScaled = -drive_speed*bentroll*(Math.pow(driver.getLeftY(),1.6));
         }
         else if (driver.getLeftY() > 0) {
-            yAxisScaled = drive_speed*bentroll*(driver.getLeftY()*driver.getLeftY());
+            yAxisScaled = drive_speed*bentroll*(Math.pow(driver.getLeftY(),1.6));
         }
         if (move_db == false & joystick.getThrottle() != -1) {
         m_robotDrive.arcadeDrive(yAxisScaled, xAxisScaled);
