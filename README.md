@@ -1,3 +1,3 @@
-FRC 2024 Code for the robot Garry, a robot designed for Crecendo and Warp 2024.
+Welcome to the code for Garry, this is the final version of Garry, used at the tournament.
 
-For those you that are new, please edit: src/main/java/frc/robot/Robot.java
+Garry is the robot main robot for the Western Blue Tongues, it's based the off the Quokka Bot, from the Unqualified Quokkas.
